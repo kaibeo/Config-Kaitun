@@ -1,0 +1,569 @@
+-- ============================================
+-- ROBLOX UI - KAITUN BF CONFIG (v1.3 - Compact)
+-- Tông ĐỎ - ĐEN | Icon tự vẽ 100% bằng Frame/UICorner (không emoji, không ảnh ngoài)
+-- ============================================
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local Stats = game:GetService("Stats")
+
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- ============================================
+-- BẢNG MÀU CHỦ ĐẠO (ĐỎ - ĐEN)
+-- ============================================
+local PALETTE = {
+	Background   = Color3.fromRGB(10, 10, 12),
+	HeaderBg     = Color3.fromRGB(22, 12, 14),
+	Red          = Color3.fromRGB(220, 30, 45),
+	RedBright    = Color3.fromRGB(255, 60, 70),
+	RedDim       = Color3.fromRGB(120, 20, 28),
+	StrokeGray   = Color3.fromRGB(60, 45, 46),
+	TextWhite    = Color3.fromRGB(235, 235, 235),
+	TextGray     = Color3.fromRGB(150, 140, 140),
+	ValueBg      = Color3.fromRGB(24, 15, 17),
+}
+
+-- ============================================
+-- SCREEN GUI
+-- ============================================
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "KaitunBFUI"
+screenGui.ResetOnSpawn = false
+screenGui.DisplayOrder = 10
+screenGui.Parent = playerGui
+
+-- ============================================
+-- MAIN PANEL (thu nhỏ)
+-- ============================================
+local mainPanel = Instance.new("Frame")
+mainPanel.Name = "MainPanel"
+mainPanel.Size = UDim2.new(0, 260, 0, 220)
+mainPanel.Position = UDim2.new(0.5, -130, 0.5, -110)
+mainPanel.BackgroundColor3 = PALETTE.Background
+mainPanel.BorderSizePixel = 0
+mainPanel.Parent = screenGui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 10)
+corner.Parent = mainPanel
+
+local stroke = Instance.new("UIStroke")
+stroke.Color = PALETTE.Red
+stroke.Thickness = 1.2
+stroke.Transparency = 0.25
+stroke.Parent = mainPanel
+
+local glow = Instance.new("Frame")
+glow.Name = "Glow"
+glow.Size = UDim2.new(1, 14, 1, 14)
+glow.Position = UDim2.new(0, -7, 0, -7)
+glow.BackgroundColor3 = PALETTE.Red
+glow.BackgroundTransparency = 0.93
+glow.BorderSizePixel = 0
+glow.ZIndex = 0
+glow.Parent = mainPanel
+
+local glowCorner = Instance.new("UICorner")
+glowCorner.CornerRadius = UDim.new(0, 16)
+glowCorner.Parent = glow
+
+-- ============================================
+-- HEADER
+-- ============================================
+local headerPanel = Instance.new("Frame")
+headerPanel.Name = "HeaderPanel"
+headerPanel.Size = UDim2.new(1, 0, 0, 40)
+headerPanel.Position = UDim2.new(0, 0, 0, 0)
+headerPanel.BackgroundColor3 = PALETTE.HeaderBg
+headerPanel.BorderSizePixel = 0
+headerPanel.Parent = mainPanel
+
+local headerCorner = Instance.new("UICorner")
+headerCorner.CornerRadius = UDim.new(0, 10)
+headerCorner.Parent = headerPanel
+
+local headerMask = Instance.new("Frame")
+headerMask.Name = "HeaderMask"
+headerMask.Size = UDim2.new(1, 0, 0, 12)
+headerMask.Position = UDim2.new(0, 0, 1, -12)
+headerMask.BackgroundColor3 = PALETTE.HeaderBg
+headerMask.BorderSizePixel = 0
+headerMask.ZIndex = 1
+headerMask.Parent = headerPanel
+
+local headerLine = Instance.new("Frame")
+headerLine.Name = "HeaderLine"
+headerLine.Size = UDim2.new(1, 0, 0, 1)
+headerLine.Position = UDim2.new(0, 0, 1, 0)
+headerLine.BackgroundColor3 = PALETTE.Red
+headerLine.BackgroundTransparency = 0.3
+headerLine.BorderSizePixel = 0
+headerLine.ZIndex = 2
+headerLine.Parent = headerPanel
+
+-- ============================================
+-- ICON HEADER TỰ VẼ: KIẾM CHÉO SÚNG (đơn giản, nhỏ)
+-- Kiếm: 1 thanh dọc (lưỡi) + 1 thanh ngang nhỏ (chuôi), xoay 45°
+-- Súng: 1 khối chữ nhật ngang (nòng) + 1 khối vuông nhỏ (báng), xoay -45°
+-- ============================================
+local iconHolder = Instance.new("Frame")
+iconHolder.Name = "IconHolder"
+iconHolder.Size = UDim2.new(0, 26, 0, 26)
+iconHolder.Position = UDim2.new(0, 8, 0.5, -13)
+iconHolder.BackgroundTransparency = 1
+iconHolder.ZIndex = 3
+iconHolder.Parent = headerPanel
+
+-- Nền tròn nhỏ phía sau (đế icon)
+local iconBg = Instance.new("Frame")
+iconBg.Size = UDim2.new(1, 0, 1, 0)
+iconBg.BackgroundColor3 = PALETTE.ValueBg
+iconBg.BorderSizePixel = 0
+iconBg.ZIndex = 3
+iconBg.Parent = iconHolder
+local iconBgCorner = Instance.new("UICorner")
+iconBgCorner.CornerRadius = UDim.new(1, 0)
+iconBgCorner.Parent = iconBg
+local iconBgStroke = Instance.new("UIStroke")
+iconBgStroke.Color = PALETTE.RedDim
+iconBgStroke.Thickness = 1
+iconBgStroke.Parent = iconBg
+
+-- Lưỡi kiếm (thanh chéo trắng-đỏ)
+local swordBlade = Instance.new("Frame")
+swordBlade.Size = UDim2.new(0, 3, 0, 16)
+swordBlade.Position = UDim2.new(0.5, -1.5, 0.5, -8)
+swordBlade.Rotation = -40
+swordBlade.BackgroundColor3 = PALETTE.TextWhite
+swordBlade.BorderSizePixel = 0
+swordBlade.ZIndex = 4
+swordBlade.Parent = iconHolder
+local swordBladeCorner = Instance.new("UICorner")
+swordBladeCorner.CornerRadius = UDim.new(1, 0)
+swordBladeCorner.Parent = swordBlade
+
+-- Chuôi kiếm (thanh ngang nhỏ đỏ, cắt lưỡi kiếm)
+local swordHilt = Instance.new("Frame")
+swordHilt.Size = UDim2.new(0, 7, 0, 2)
+swordHilt.Position = UDim2.new(0.5, -3.5, 0.72, -1)
+swordHilt.Rotation = -40
+swordHilt.BackgroundColor3 = PALETTE.RedBright
+swordHilt.BorderSizePixel = 0
+swordHilt.ZIndex = 5
+swordHilt.Parent = iconHolder
+local swordHiltCorner = Instance.new("UICorner")
+swordHiltCorner.CornerRadius = UDim.new(1, 0)
+swordHiltCorner.Parent = swordHilt
+
+-- Nòng súng (thanh chéo đỏ đậm, chéo ngược lại)
+local gunBarrel = Instance.new("Frame")
+gunBarrel.Size = UDim2.new(0, 3, 0, 13)
+gunBarrel.Position = UDim2.new(0.5, -1.5, 0.42, -6.5)
+gunBarrel.Rotation = 40
+gunBarrel.BackgroundColor3 = PALETTE.RedBright
+gunBarrel.BorderSizePixel = 0
+gunBarrel.ZIndex = 4
+gunBarrel.Parent = iconHolder
+local gunBarrelCorner = Instance.new("UICorner")
+gunBarrelCorner.CornerRadius = UDim.new(1, 0)
+gunBarrelCorner.Parent = gunBarrel
+
+-- Báng súng (khối nhỏ ở đuôi nòng)
+local gunGrip = Instance.new("Frame")
+gunGrip.Size = UDim2.new(0, 5, 0, 5)
+gunGrip.Position = UDim2.new(0.72, -2.5, 0.68, -2.5)
+gunGrip.Rotation = 40
+gunGrip.BackgroundColor3 = PALETTE.RedDim
+gunGrip.BorderSizePixel = 0
+gunGrip.ZIndex = 4
+gunGrip.Parent = iconHolder
+local gunGripCorner = Instance.new("UICorner")
+gunGripCorner.CornerRadius = UDim.new(0, 2)
+gunGripCorner.Parent = gunGrip
+
+-- ============================================
+-- TIÊU ĐỀ (rút gọn)
+-- ============================================
+local titleText = Instance.new("TextLabel")
+titleText.Name = "TitleText"
+titleText.Size = UDim2.new(1, -100, 0, 16)
+titleText.Position = UDim2.new(0, 40, 0, 6)
+titleText.BackgroundTransparency = 1
+titleText.TextColor3 = PALETTE.TextWhite
+titleText.TextSize = 13
+titleText.Font = Enum.Font.GothamBold
+titleText.Text = "Config BF Banana | v1.1"
+titleText.TextXAlignment = Enum.TextXAlignment.Left
+titleText.ZIndex = 3
+titleText.Parent = headerPanel
+
+local subtitleText = Instance.new("TextLabel")
+subtitleText.Name = "SubtitleText"
+subtitleText.Size = UDim2.new(1, -100, 0, 12)
+subtitleText.Position = UDim2.new(0, 40, 0, 21)
+subtitleText.BackgroundTransparency = 1
+subtitleText.TextColor3 = PALETTE.Red
+subtitleText.TextSize = 10
+subtitleText.Font = Enum.Font.Gotham
+subtitleText.Text = "by Kaibeo · v1.1"
+subtitleText.TextXAlignment = Enum.TextXAlignment.Left
+subtitleText.ZIndex = 3
+subtitleText.Parent = headerPanel
+
+-- ============================================
+-- TOGGLE SWITCH TỰ VẼ (bật/tắt UI) - nhỏ gọn
+-- ============================================
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Name = "ToggleButton"
+toggleBtn.Size = UDim2.new(0, 32, 0, 16)
+toggleBtn.Position = UDim2.new(1, -70, 0.5, -8)
+toggleBtn.BackgroundColor3 = PALETTE.Red
+toggleBtn.Text = ""
+toggleBtn.AutoButtonColor = false
+toggleBtn.ZIndex = 3
+toggleBtn.Parent = headerPanel
+
+local toggleCorner = Instance.new("UICorner")
+toggleCorner.CornerRadius = UDim.new(1, 0)
+toggleCorner.Parent = toggleBtn
+
+local toggleStroke = Instance.new("UIStroke")
+toggleStroke.Color = PALETTE.RedBright
+toggleStroke.Thickness = 1
+toggleStroke.Transparency = 0.2
+toggleStroke.Parent = toggleBtn
+
+local toggleKnob = Instance.new("Frame")
+toggleKnob.Name = "Knob"
+toggleKnob.Size = UDim2.new(0, 12, 0, 12)
+toggleKnob.Position = UDim2.new(1, -14, 0.5, -6) -- ON (phải)
+toggleKnob.BackgroundColor3 = PALETTE.TextWhite
+toggleKnob.BorderSizePixel = 0
+toggleKnob.ZIndex = 4
+toggleKnob.Parent = toggleBtn
+
+local toggleKnobCorner = Instance.new("UICorner")
+toggleKnobCorner.CornerRadius = UDim.new(1, 0)
+toggleKnobCorner.Parent = toggleKnob
+
+-- Nút đóng tự vẽ (dấu X)
+local closeBtn = Instance.new("TextButton")
+closeBtn.Name = "CloseButton"
+closeBtn.Size = UDim2.new(0, 22, 0, 22)
+closeBtn.Position = UDim2.new(1, -30, 0.5, -11)
+closeBtn.BackgroundColor3 = PALETTE.ValueBg
+closeBtn.Text = ""
+closeBtn.AutoButtonColor = false
+closeBtn.ZIndex = 3
+closeBtn.Parent = headerPanel
+
+local closeBtnCorner = Instance.new("UICorner")
+closeBtnCorner.CornerRadius = UDim.new(0, 6)
+closeBtnCorner.Parent = closeBtn
+
+local closeBtnStroke = Instance.new("UIStroke")
+closeBtnStroke.Color = PALETTE.RedDim
+closeBtnStroke.Thickness = 1
+closeBtnStroke.Parent = closeBtn
+
+local xBar1 = Instance.new("Frame")
+xBar1.Size = UDim2.new(0, 11, 0, 2)
+xBar1.Position = UDim2.new(0.5, -5.5, 0.5, -1)
+xBar1.Rotation = 45
+xBar1.BackgroundColor3 = PALETTE.RedBright
+xBar1.BorderSizePixel = 0
+xBar1.ZIndex = 4
+xBar1.Parent = closeBtn
+local xBar1Corner = Instance.new("UICorner")
+xBar1Corner.CornerRadius = UDim.new(1, 0)
+xBar1Corner.Parent = xBar1
+
+local xBar2 = xBar1:Clone()
+xBar2.Rotation = -45
+xBar2.Parent = closeBtn
+
+-- ============================================
+-- CONTENT PANEL
+-- ============================================
+local contentPanel = Instance.new("Frame")
+contentPanel.Name = "ContentPanel"
+contentPanel.Size = UDim2.new(1, -16, 1, -66)
+contentPanel.Position = UDim2.new(0, 8, 0, 46)
+contentPanel.BackgroundTransparency = 1
+contentPanel.BorderSizePixel = 0
+contentPanel.Parent = mainPanel
+
+-- ============================================
+-- ICON RIÊNG CHO TỪNG DÒNG STATUS - đơn giản: 1 chữ cái viết tắt trong khung vuông nhỏ
+-- (thay cho icon kim cương lặp lại cầu kỳ trước đây)
+-- ============================================
+local function createMiniIcon(parent, letter)
+	local holder = Instance.new("Frame")
+	holder.Size = UDim2.new(0, 18, 0, 18)
+	holder.Position = UDim2.new(0, 0, 0.5, -9)
+	holder.BackgroundColor3 = PALETTE.ValueBg
+	holder.BorderSizePixel = 0
+	holder.Parent = parent
+
+	local holderCorner = Instance.new("UICorner")
+	holderCorner.CornerRadius = UDim.new(0, 5)
+	holderCorner.Parent = holder
+
+	local holderStroke = Instance.new("UIStroke")
+	holderStroke.Color = PALETTE.RedDim
+	holderStroke.Thickness = 1
+	holderStroke.Parent = holder
+
+	local letterLbl = Instance.new("TextLabel")
+	letterLbl.Size = UDim2.new(1, 0, 1, 0)
+	letterLbl.BackgroundTransparency = 1
+	letterLbl.TextColor3 = PALETTE.RedBright
+	letterLbl.TextSize = 11
+	letterLbl.Font = Enum.Font.GothamBold
+	letterLbl.Text = letter
+	letterLbl.Parent = holder
+
+	return holder
+end
+
+-- ============================================
+-- STATUS BAR (kiểu Maru, tông đỏ-đen, thu nhỏ, mỗi dòng 1 icon chữ riêng)
+-- ============================================
+local function createStatusBar(parent, labelText, iconLetter, yPos)
+	local statusContainer = Instance.new("Frame")
+	statusContainer.Name = labelText .. "Container"
+	statusContainer.Size = UDim2.new(1, 0, 0, 26)
+	statusContainer.Position = UDim2.new(0, 0, 0, yPos)
+	statusContainer.BackgroundTransparency = 1
+	statusContainer.Parent = parent
+
+	createMiniIcon(statusContainer, iconLetter)
+
+	local label = Instance.new("TextLabel")
+	label.Name = "Label"
+	label.Size = UDim2.new(0, 58, 1, 0)
+	label.Position = UDim2.new(0, 24, 0, 0)
+	label.BackgroundTransparency = 1
+	label.TextColor3 = PALETTE.TextGray
+	label.TextSize = 12
+	label.Font = Enum.Font.GothamMedium
+	label.Text = labelText
+	label.TextXAlignment = Enum.TextXAlignment.Left
+	label.Parent = statusContainer
+
+	local valueBg = Instance.new("Frame")
+	valueBg.Name = "ValueBg"
+	valueBg.Size = UDim2.new(1, -84, 1, -4)
+	valueBg.Position = UDim2.new(0, 82, 0, 2)
+	valueBg.BackgroundColor3 = PALETTE.ValueBg
+	valueBg.BorderSizePixel = 0
+	valueBg.Parent = statusContainer
+
+	local valueBgCorner = Instance.new("UICorner")
+	valueBgCorner.CornerRadius = UDim.new(0, 6)
+	valueBgCorner.Parent = valueBg
+
+	local valueBgStroke = Instance.new("UIStroke")
+	valueBgStroke.Color = PALETTE.StrokeGray
+	valueBgStroke.Thickness = 1
+	valueBgStroke.Transparency = 0.3
+	valueBgStroke.Parent = valueBg
+
+	local accentBar = Instance.new("Frame")
+	accentBar.Size = UDim2.new(0, 2, 1, -6)
+	accentBar.Position = UDim2.new(0, 3, 0, 3)
+	accentBar.BackgroundColor3 = PALETTE.Red
+	accentBar.BorderSizePixel = 0
+	accentBar.Parent = valueBg
+	local accentCorner = Instance.new("UICorner")
+	accentCorner.CornerRadius = UDim.new(1, 0)
+	accentCorner.Parent = accentBar
+
+	local valueText = Instance.new("TextLabel")
+	valueText.Name = "ValueText"
+	valueText.Size = UDim2.new(1, -14, 1, 0)
+	valueText.Position = UDim2.new(0, 10, 0, 0)
+	valueText.BackgroundTransparency = 1
+	valueText.TextColor3 = PALETTE.RedBright
+	valueText.TextSize = 12
+	valueText.Font = Enum.Font.Gotham
+	valueText.Text = "..."
+	valueText.TextXAlignment = Enum.TextXAlignment.Left
+	valueText.Parent = valueBg
+
+	return statusContainer, valueText
+end
+
+-- 5 dòng: Username, Thời gian, Ping, FPS, Trạng thái (mỗi dòng cách nhau 28px, vừa đủ trong panel 220 cao)
+local statusUsername, usernameValue = createStatusBar(contentPanel, "User", "U", 0)
+local statusHour, hourValue = createStatusBar(contentPanel, "Giờ", "T", 28)
+local statusPing, pingValue = createStatusBar(contentPanel, "Ping", "P", 56)
+local statusFps, fpsValue = createStatusBar(contentPanel, "FPS", "F", 84)
+local statusStatus, statusValue = createStatusBar(contentPanel, "Status", "S", 112)
+
+-- ============================================
+-- NÚT NỔI (FLOATING BUTTON) - nhỏ gọn, icon kiếm-súng mini
+-- ============================================
+local floatBtn = Instance.new("TextButton")
+floatBtn.Name = "FloatButton"
+floatBtn.Size = UDim2.new(0, 34, 0, 34)
+floatBtn.Position = UDim2.new(0, 16, 0, 16)
+floatBtn.BackgroundColor3 = PALETTE.Background
+floatBtn.Text = ""
+floatBtn.AutoButtonColor = false
+floatBtn.Visible = false
+floatBtn.Parent = screenGui
+
+local floatCorner = Instance.new("UICorner")
+floatCorner.CornerRadius = UDim.new(1, 0)
+floatCorner.Parent = floatBtn
+
+local floatStroke = Instance.new("UIStroke")
+floatStroke.Color = PALETTE.Red
+floatStroke.Thickness = 1.2
+floatStroke.Transparency = 0.2
+floatStroke.Parent = floatBtn
+
+local floatBlade = Instance.new("Frame")
+floatBlade.Size = UDim2.new(0, 2, 0, 12)
+floatBlade.Position = UDim2.new(0.5, -1, 0.5, -6)
+floatBlade.Rotation = -40
+floatBlade.BackgroundColor3 = PALETTE.TextWhite
+floatBlade.BorderSizePixel = 0
+floatBlade.Parent = floatBtn
+local floatBladeCorner = Instance.new("UICorner")
+floatBladeCorner.CornerRadius = UDim.new(1, 0)
+floatBladeCorner.Parent = floatBlade
+
+local floatBarrel = Instance.new("Frame")
+floatBarrel.Size = UDim2.new(0, 2, 0, 10)
+floatBarrel.Position = UDim2.new(0.5, -1, 0.42, -5)
+floatBarrel.Rotation = 40
+floatBarrel.BackgroundColor3 = PALETTE.RedBright
+floatBarrel.BorderSizePixel = 0
+floatBarrel.Parent = floatBtn
+local floatBarrelCorner = Instance.new("UICorner")
+floatBarrelCorner.CornerRadius = UDim.new(1, 0)
+floatBarrelCorner.Parent = floatBarrel
+
+-- ============================================
+-- CẬP NHẬT DỮ LIỆU (không hiệu ứng đổi màu chữ)
+-- ============================================
+usernameValue.Text = player.Name
+statusValue.Text = "Online"
+
+RunService.Heartbeat:Connect(function()
+	hourValue.Text = os.date("%H:%M:%S")
+end)
+
+-- Ping (ms) - lấy từ Stats service
+task.spawn(function()
+	while task.wait(1) do
+		local ok, ping = pcall(function()
+			return Stats.Network.ServerStatsItem["Data Ping"]:GetValue()
+		end)
+		if ok and ping then
+			pingValue.Text = math.floor(ping) .. " ms"
+		else
+			pingValue.Text = "N/A"
+		end
+	end
+end)
+
+-- FPS - đo qua Heartbeat
+do
+	local frameCount = 0
+	local fpsTimer = 0
+	RunService.Heartbeat:Connect(function(dt)
+		frameCount += 1
+		fpsTimer += dt
+		if fpsTimer >= 1 then
+			fpsValue.Text = tostring(frameCount)
+			frameCount = 0
+			fpsTimer = 0
+		end
+	end)
+end
+
+-- ============================================
+-- KIỂM SOÁT UI - BẬT/TẮT (toggle switch, nút X, nút nổi) - KHÔNG DÙNG PHÍM
+-- ============================================
+local uiVisible = true
+
+local function setUIVisible(visible)
+	uiVisible = visible
+	mainPanel.Visible = visible
+	floatBtn.Visible = not visible
+
+	local knobTarget = visible and UDim2.new(1, -14, 0.5, -6) or UDim2.new(0, 2, 0.5, -6)
+	local bgTarget = visible and PALETTE.Red or Color3.fromRGB(40, 35, 36)
+	TweenService:Create(toggleKnob, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {Position = knobTarget}):Play()
+	TweenService:Create(toggleBtn, TweenInfo.new(0.15), {BackgroundColor3 = bgTarget}):Play()
+
+	print("UI toggled: " .. tostring(visible))
+end
+
+toggleBtn.MouseButton1Click:Connect(function()
+	setUIVisible(not uiVisible)
+end)
+
+closeBtn.MouseButton1Click:Connect(function()
+	setUIVisible(false)
+end)
+
+closeBtn.MouseEnter:Connect(function()
+	TweenService:Create(closeBtn, TweenInfo.new(0.15), {BackgroundColor3 = PALETTE.RedDim}):Play()
+end)
+closeBtn.MouseLeave:Connect(function()
+	TweenService:Create(closeBtn, TweenInfo.new(0.15), {BackgroundColor3 = PALETTE.ValueBg}):Play()
+end)
+
+floatBtn.MouseButton1Click:Connect(function()
+	setUIVisible(true)
+end)
+
+floatBtn.MouseEnter:Connect(function()
+	TweenService:Create(floatBtn, TweenInfo.new(0.15), {BackgroundColor3 = PALETTE.HeaderBg}):Play()
+end)
+floatBtn.MouseLeave:Connect(function()
+	TweenService:Create(floatBtn, TweenInfo.new(0.15), {BackgroundColor3 = PALETTE.Background}):Play()
+end)
+
+-- Kéo UI qua header
+local dragging = false
+local dragStart = nil
+local startPos = nil
+
+headerPanel.InputBegan:Connect(function(input, gameProcessed)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+		dragStart = input.Position
+		startPos = mainPanel.Position
+	end
+end)
+
+UserInputService.InputEnded:Connect(function(input, gameProcessed)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = false
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input, gameProcessed)
+	if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+		local delta = input.Position - dragStart
+		mainPanel.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+	end
+end)
+
+print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+print("✅ UI KAITUN BF COMPACT (RED-BLACK) LOADED!")
+print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+print("  Bấm nút gạt hoặc nút X để ẩn UI")
+print("  Bấm nút nổi để mở lại UI")
+print("  Kéo tiêu đề để di chuyển")
+print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+loadstring(game:HttpGet("https://raw.githubusercontent.com/obiiyeuem/vthangsitink/main/BananaCat-kaitunBF.lua"))()
