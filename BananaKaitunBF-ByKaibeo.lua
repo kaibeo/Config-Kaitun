@@ -45,6 +45,7 @@ mainPanel.Size = UDim2.new(0, 260, 0, 220)
 mainPanel.Position = UDim2.new(0.5, -130, 0.5, -110)
 mainPanel.BackgroundColor3 = PALETTE.Background
 mainPanel.BorderSizePixel = 0
+mainPanel.Visible = false -- ẩn ban đầu, chỉ hiện sau khi loading xong
 mainPanel.Parent = screenGui
 
 local corner = Instance.new("UICorner")
@@ -196,7 +197,7 @@ titleText.BackgroundTransparency = 1
 titleText.TextColor3 = PALETTE.TextWhite
 titleText.TextSize = 13
 titleText.Font = Enum.Font.GothamBold
-titleText.Text = "Config BF Banana | v1.1"
+titleText.Text = "KAITUN BF"
 titleText.TextXAlignment = Enum.TextXAlignment.Left
 titleText.ZIndex = 3
 titleText.Parent = headerPanel
@@ -209,7 +210,7 @@ subtitleText.BackgroundTransparency = 1
 subtitleText.TextColor3 = PALETTE.Red
 subtitleText.TextSize = 10
 subtitleText.Font = Enum.Font.Gotham
-subtitleText.Text = "by Kaibeo · v1.1"
+subtitleText.Text = "by Kaibeo · v1.3"
 subtitleText.TextXAlignment = Enum.TextXAlignment.Left
 subtitleText.ZIndex = 3
 subtitleText.Parent = headerPanel
@@ -331,7 +332,10 @@ local function createMiniIcon(parent, letter)
 end
 
 -- ============================================
--- STATUS BAR (kiểu Maru, tông đỏ-đen, thu nhỏ, mỗi dòng 1 icon chữ riêng)
+-- STATUS BAR NÂNG CẤP (kiểu Maru, tông đỏ-đen)
+-- - Chấm trạng thái nhấp nháy nhẹ (pulse) đầu icon
+-- - Viền value box sáng dần khi giá trị cập nhật (flash hiệu ứng)
+-- - Có thể tô màu value theo mức tốt/xấu (dùng cho Ping/FPS)
 -- ============================================
 local function createStatusBar(parent, labelText, iconLetter, yPos)
 	local statusContainer = Instance.new("Frame")
@@ -341,7 +345,39 @@ local function createStatusBar(parent, labelText, iconLetter, yPos)
 	statusContainer.BackgroundTransparency = 1
 	statusContainer.Parent = parent
 
-	createMiniIcon(statusContainer, iconLetter)
+	local iconHolder = createMiniIcon(statusContainer, iconLetter)
+
+	-- Chấm trạng thái nhỏ ở góc icon, nhấp nháy liên tục cho cảm giác "live"
+	local pulseDot = Instance.new("Frame")
+	pulseDot.Name = "PulseDot"
+	pulseDot.Size = UDim2.new(0, 6, 0, 6)
+	pulseDot.AnchorPoint = Vector2.new(0.5, 0.5)
+	pulseDot.Position = UDim2.new(1, 1, 0, 1)
+	pulseDot.BackgroundColor3 = PALETTE.RedBright
+	pulseDot.BorderSizePixel = 0
+	pulseDot.ZIndex = 5
+	pulseDot.Parent = iconHolder
+	local pulseDotCorner = Instance.new("UICorner")
+	pulseDotCorner.CornerRadius = UDim.new(1, 0)
+	pulseDotCorner.Parent = pulseDot
+	local pulseGlow = Instance.new("UIStroke")
+	pulseGlow.Color = PALETTE.RedBright
+	pulseGlow.Thickness = 2
+	pulseGlow.Transparency = 0.5
+	pulseGlow.Parent = pulseDot
+
+	task.spawn(function()
+		-- lệch pha nhẹ theo yPos để các chấm không nhấp nháy cùng lúc, nhìn sống động hơn
+		task.wait(yPos * 0.006)
+		while pulseDot.Parent do
+			TweenService:Create(pulseDot, TweenInfo.new(0.6, Enum.EasingStyle.Sine), {BackgroundTransparency = 0.7}):Play()
+			TweenService:Create(pulseGlow, TweenInfo.new(0.6, Enum.EasingStyle.Sine), {Transparency = 1}):Play()
+			task.wait(0.6)
+			TweenService:Create(pulseDot, TweenInfo.new(0.6, Enum.EasingStyle.Sine), {BackgroundTransparency = 0}):Play()
+			TweenService:Create(pulseGlow, TweenInfo.new(0.6, Enum.EasingStyle.Sine), {Transparency = 0.5}):Play()
+			task.wait(0.6)
+		end
+	end)
 
 	local label = Instance.new("TextLabel")
 	label.Name = "Label"
@@ -361,6 +397,7 @@ local function createStatusBar(parent, labelText, iconLetter, yPos)
 	valueBg.Position = UDim2.new(0, 82, 0, 2)
 	valueBg.BackgroundColor3 = PALETTE.ValueBg
 	valueBg.BorderSizePixel = 0
+	valueBg.ClipsDescendants = true
 	valueBg.Parent = statusContainer
 
 	local valueBgCorner = Instance.new("UICorner")
@@ -372,6 +409,15 @@ local function createStatusBar(parent, labelText, iconLetter, yPos)
 	valueBgStroke.Thickness = 1
 	valueBgStroke.Transparency = 0.3
 	valueBgStroke.Parent = valueBg
+
+	-- Gradient nền rất nhẹ cho value box, tạo chiều sâu thay vì phẳng 1 màu
+	local valueBgGradient = Instance.new("UIGradient")
+	valueBgGradient.Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 18, 20)),
+		ColorSequenceKeypoint.new(1, PALETTE.ValueBg),
+	})
+	valueBgGradient.Rotation = 0
+	valueBgGradient.Parent = valueBg
 
 	local accentBar = Instance.new("Frame")
 	accentBar.Size = UDim2.new(0, 2, 1, -6)
@@ -390,20 +436,58 @@ local function createStatusBar(parent, labelText, iconLetter, yPos)
 	valueText.BackgroundTransparency = 1
 	valueText.TextColor3 = PALETTE.RedBright
 	valueText.TextSize = 12
-	valueText.Font = Enum.Font.Gotham
+	valueText.Font = Enum.Font.GothamMedium
 	valueText.Text = "..."
 	valueText.TextXAlignment = Enum.TextXAlignment.Left
 	valueText.Parent = valueBg
 
-	return statusContainer, valueText
+	-- Hiệu ứng flash nhẹ trên viền mỗi khi giá trị được cập nhật (dùng cho Ping/FPS/Giờ)
+	local function flashUpdate()
+		TweenService:Create(valueBgStroke, TweenInfo.new(0.08), {Color = PALETTE.RedBright, Transparency = 0}):Play()
+		task.delay(0.15, function()
+			TweenService:Create(valueBgStroke, TweenInfo.new(0.35), {Color = PALETTE.StrokeGray, Transparency = 0.3}):Play()
+		end)
+	end
+
+	-- Hover: sáng nhẹ toàn dòng cho cảm giác tương tác được (dù chỉ để hiển thị)
+	local hoverArea = Instance.new("TextButton")
+	hoverArea.Size = UDim2.new(1, 0, 1, 0)
+	hoverArea.BackgroundTransparency = 1
+	hoverArea.Text = ""
+	hoverArea.AutoButtonColor = false
+	hoverArea.ZIndex = 6
+	hoverArea.Parent = valueBg
+	hoverArea.MouseEnter:Connect(function()
+		TweenService:Create(valueBg, TweenInfo.new(0.15), {BackgroundTransparency = 0}):Play()
+		TweenService:Create(valueBgStroke, TweenInfo.new(0.15), {Transparency = 0.05}):Play()
+	end)
+	hoverArea.MouseLeave:Connect(function()
+		TweenService:Create(valueBgStroke, TweenInfo.new(0.15), {Transparency = 0.3}):Play()
+	end)
+
+	return statusContainer, valueText, flashUpdate
 end
 
 -- 5 dòng: Username, Thời gian, Ping, FPS, Trạng thái (mỗi dòng cách nhau 28px, vừa đủ trong panel 220 cao)
-local statusUsername, usernameValue = createStatusBar(contentPanel, "User", "U", 0)
-local statusHour, hourValue = createStatusBar(contentPanel, "Giờ", "T", 28)
-local statusPing, pingValue = createStatusBar(contentPanel, "Ping", "P", 56)
-local statusFps, fpsValue = createStatusBar(contentPanel, "FPS", "F", 84)
-local statusStatus, statusValue = createStatusBar(contentPanel, "Status", "S", 112)
+local statusUsername, usernameValue, flashUsername = createStatusBar(contentPanel, "User", "U", 0)
+local statusHour, hourValue, flashHour = createStatusBar(contentPanel, "Giờ", "T", 28)
+local statusPing, pingValue, flashPing = createStatusBar(contentPanel, "Ping", "P", 56)
+local statusFps, fpsValue, flashFps = createStatusBar(contentPanel, "FPS", "F", 84)
+local statusStatus, statusValue, flashStatus = createStatusBar(contentPanel, "Status", "S", 112)
+
+-- Hàm tô màu value theo ngưỡng tốt/vừa/xấu, cho Ping và FPS đẹp và trực quan hơn
+local function colorizeByThreshold(valueLbl, num, goodMax, okMax, higherIsBetter)
+	local good, ok_, bad = Color3.fromRGB(90, 220, 130), PALETTE.RedBright, Color3.fromRGB(255, 90, 90)
+	if higherIsBetter then
+		if num >= goodMax then valueLbl.TextColor3 = good
+		elseif num >= okMax then valueLbl.TextColor3 = ok_
+		else valueLbl.TextColor3 = bad end
+	else
+		if num <= goodMax then valueLbl.TextColor3 = good
+		elseif num <= okMax then valueLbl.TextColor3 = ok_
+		else valueLbl.TextColor3 = bad end
+	end
+end
 
 -- ============================================
 -- NÚT NỔI (FLOATING BUTTON) - nhỏ gọn, icon kiếm-súng mini
@@ -451,16 +535,268 @@ floatBarrelCorner.CornerRadius = UDim.new(1, 0)
 floatBarrelCorner.Parent = floatBarrel
 
 -- ============================================
--- CẬP NHẬT DỮ LIỆU (không hiệu ứng đổi màu chữ)
+-- LOADING SCREEN (hiện khi UI khởi tạo, tông đỏ-đen, icon tự vẽ)
 -- ============================================
-usernameValue.Text = player.Name
-statusValue.Text = "Online"
+local loadingScreen = Instance.new("Frame")
+loadingScreen.Name = "LoadingScreen"
+loadingScreen.Size = UDim2.new(1, 0, 1, 0)
+loadingScreen.BackgroundColor3 = PALETTE.Background
+loadingScreen.BackgroundTransparency = 0
+loadingScreen.BorderSizePixel = 0
+loadingScreen.ZIndex = 50
+loadingScreen.Parent = screenGui
 
-RunService.Heartbeat:Connect(function()
-	hourValue.Text = os.date("%H:%M:%S")
+-- Khối icon giữa màn hình (kiếm chéo súng, to hơn, xoay nhẹ khi loading)
+local loadIconHolder = Instance.new("Frame")
+loadIconHolder.Size = UDim2.new(0, 54, 0, 54)
+loadIconHolder.Position = UDim2.new(0.5, -27, 0.5, -70)
+loadIconHolder.BackgroundColor3 = PALETTE.ValueBg
+loadIconHolder.BorderSizePixel = 0
+loadIconHolder.ZIndex = 51
+loadIconHolder.Parent = loadingScreen
+
+local loadIconCorner = Instance.new("UICorner")
+loadIconCorner.CornerRadius = UDim.new(1, 0)
+loadIconCorner.Parent = loadIconHolder
+
+local loadIconStroke = Instance.new("UIStroke")
+loadIconStroke.Color = PALETTE.Red
+loadIconStroke.Thickness = 1.5
+loadIconStroke.Transparency = 0.15
+loadIconStroke.ZIndex = 51
+loadIconStroke.Parent = loadIconHolder
+
+local loadBlade = Instance.new("Frame")
+loadBlade.Size = UDim2.new(0, 4, 0, 26)
+loadBlade.Position = UDim2.new(0.5, -2, 0.5, -13)
+loadBlade.Rotation = -40
+loadBlade.BackgroundColor3 = PALETTE.TextWhite
+loadBlade.BorderSizePixel = 0
+loadBlade.ZIndex = 52
+loadBlade.Parent = loadIconHolder
+local loadBladeCorner = Instance.new("UICorner")
+loadBladeCorner.CornerRadius = UDim.new(1, 0)
+loadBladeCorner.Parent = loadBlade
+
+local loadBarrel = Instance.new("Frame")
+loadBarrel.Size = UDim2.new(0, 4, 0, 21)
+loadBarrel.Position = UDim2.new(0.5, -2, 0.42, -10.5)
+loadBarrel.Rotation = 40
+loadBarrel.BackgroundColor3 = PALETTE.RedBright
+loadBarrel.BorderSizePixel = 0
+loadBarrel.ZIndex = 52
+loadBarrel.Parent = loadIconHolder
+local loadBarrelCorner = Instance.new("UICorner")
+loadBarrelCorner.CornerRadius = UDim.new(1, 0)
+loadBarrelCorner.Parent = loadBarrel
+
+-- Vòng xoay quanh icon (hiệu ứng loading spinner tự vẽ, chỉ hiện 1 cung tròn bằng 4 chấm)
+local spinnerDots = {}
+for i = 1, 8 do
+	local angle = (i - 1) * (360 / 8)
+	local dot = Instance.new("Frame")
+	dot.Size = UDim2.new(0, 5, 0, 5)
+	dot.AnchorPoint = Vector2.new(0.5, 0.5)
+	dot.Position = UDim2.new(0.5, 34 * math.cos(math.rad(angle)), 0.5, 34 * math.sin(math.rad(angle)))
+	dot.BackgroundColor3 = PALETTE.Red
+	dot.BackgroundTransparency = 0.7
+	dot.BorderSizePixel = 0
+	dot.ZIndex = 51
+	dot.Parent = loadIconHolder
+	local dotCorner = Instance.new("UICorner")
+	dotCorner.CornerRadius = UDim.new(1, 0)
+	dotCorner.Parent = dot
+	table.insert(spinnerDots, dot)
+end
+
+-- Tiêu đề loading
+local loadTitle = Instance.new("TextLabel")
+loadTitle.Size = UDim2.new(0, 260, 0, 22)
+loadTitle.Position = UDim2.new(0.5, -130, 0.5, -6)
+loadTitle.BackgroundTransparency = 1
+loadTitle.TextColor3 = PALETTE.TextWhite
+loadTitle.TextSize = 16
+loadTitle.Font = Enum.Font.GothamBold
+loadTitle.Text = ""
+loadTitle.ZIndex = 51
+loadTitle.Parent = loadingScreen
+
+-- Dòng chữ trạng thái (hiệu ứng chạy chữ dần từng ký tự, đổi text theo tiến trình)
+local loadStatusText = Instance.new("TextLabel")
+loadStatusText.Size = UDim2.new(0, 260, 0, 16)
+loadStatusText.Position = UDim2.new(0.5, -130, 0.5, 18)
+loadStatusText.BackgroundTransparency = 1
+loadStatusText.TextColor3 = PALETTE.TextGray
+loadStatusText.TextSize = 11
+loadStatusText.Font = Enum.Font.Gotham
+loadStatusText.Text = ""
+loadStatusText.ZIndex = 51
+loadStatusText.Parent = loadingScreen
+
+-- Khung progress bar
+local progressBarBg = Instance.new("Frame")
+progressBarBg.Size = UDim2.new(0, 200, 0, 6)
+progressBarBg.Position = UDim2.new(0.5, -100, 0.5, 44)
+progressBarBg.BackgroundColor3 = PALETTE.ValueBg
+progressBarBg.BorderSizePixel = 0
+progressBarBg.ZIndex = 51
+progressBarBg.Parent = loadingScreen
+
+local progressBarBgCorner = Instance.new("UICorner")
+progressBarBgCorner.CornerRadius = UDim.new(1, 0)
+progressBarBgCorner.Parent = progressBarBg
+
+local progressBarBgStroke = Instance.new("UIStroke")
+progressBarBgStroke.Color = PALETTE.StrokeGray
+progressBarBgStroke.Thickness = 1
+progressBarBgStroke.Transparency = 0.3
+progressBarBgStroke.Parent = progressBarBg
+
+local progressBarFill = Instance.new("Frame")
+progressBarFill.Size = UDim2.new(0, 0, 1, 0)
+progressBarFill.BackgroundColor3 = PALETTE.Red
+progressBarFill.BorderSizePixel = 0
+progressBarFill.ZIndex = 52
+progressBarFill.Parent = progressBarBg
+
+local progressBarFillCorner = Instance.new("UICorner")
+progressBarFillCorner.CornerRadius = UDim.new(1, 0)
+progressBarFillCorner.Parent = progressBarFill
+
+local progressBarGlow = Instance.new("UIStroke")
+progressBarGlow.Color = PALETTE.RedBright
+progressBarGlow.Thickness = 1
+progressBarGlow.Transparency = 0.4
+progressBarGlow.Parent = progressBarFill
+
+-- Phần trăm loading
+local progressPercent = Instance.new("TextLabel")
+progressPercent.Size = UDim2.new(0, 200, 0, 14)
+progressPercent.Position = UDim2.new(0.5, -100, 0.5, 54)
+progressPercent.BackgroundTransparency = 1
+progressPercent.TextColor3 = PALETTE.RedBright
+progressPercent.TextSize = 11
+progressPercent.Font = Enum.Font.GothamBold
+progressPercent.Text = "0%"
+progressPercent.ZIndex = 51
+progressPercent.Parent = loadingScreen
+
+-- Hàm hiệu ứng chữ chạy dần (typewriter effect) - hiện từng ký tự một
+local function typewriter(label, fullText, charDelay)
+	label.Text = ""
+	for i = 1, #fullText do
+		label.Text = string.sub(fullText, 1, i)
+		task.wait(charDelay or 0.02)
+	end
+end
+
+-- Luồng chạy loading: xoay spinner + tăng progress bar + đổi chữ trạng thái
+task.spawn(function()
+	-- Chữ tiêu đề chạy hiệu ứng typewriter
+	typewriter(loadTitle, "KAITUN BF CONFIG", 0.035)
+
+	local steps = {
+		{text = "Đang kết nối server...", percent = 25},
+		{text = "Đang tải dữ liệu người dùng...", percent = 55},
+		{text = "Đang khởi tạo giao diện...", percent = 80},
+		{text = "Hoàn tất!", percent = 100},
+	}
+
+	local spinAngle = 0
+	local spinning = true
+
+	-- Luồng xoay spinner song song
+	task.spawn(function()
+		while spinning do
+			spinAngle += 6
+			for i, dot in ipairs(spinnerDots) do
+				local baseAngle = (i - 1) * (360 / 8)
+				local a = baseAngle + spinAngle
+				dot.Position = UDim2.new(0.5, 34 * math.cos(math.rad(a)), 0.5, 34 * math.sin(math.rad(a)))
+				-- Đuôi sao chổi: chấm gần góc hiện tại sáng hơn
+				local diff = (a - spinAngle) % 360
+				dot.BackgroundTransparency = 0.3 + (diff / 360) * 0.6
+			end
+			task.wait(0.02)
+		end
+	end)
+
+	for _, step in ipairs(steps) do
+		typewriter(loadStatusText, step.text, 0.015)
+		TweenService:Create(progressBarFill, TweenInfo.new(0.4, Enum.EasingStyle.Quad), {Size = UDim2.new(step.percent / 100, 0, 1, 0)}):Play()
+		-- Đếm số % chạy dần
+		local startPercent = tonumber(string.match(progressPercent.Text, "%d+")) or 0
+		for p = startPercent, step.percent do
+			progressPercent.Text = p .. "%"
+			task.wait(0.008)
+		end
+		task.wait(0.25)
+	end
+
+	spinning = false
+	task.wait(0.3)
+
+	-- Hiệu ứng ẩn màn hình loading: fade out + icon phóng to mờ dần
+	local fadeTween = TweenService:Create(loadingScreen, TweenInfo.new(0.4, Enum.EasingStyle.Quad), {BackgroundTransparency = 1})
+	local iconFadeTween = TweenService:Create(loadIconHolder, TweenInfo.new(0.4), {BackgroundTransparency = 1, Size = UDim2.new(0, 70, 0, 70)})
+	TweenService:Create(loadTitle, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
+	TweenService:Create(loadStatusText, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
+	TweenService:Create(progressPercent, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
+	TweenService:Create(progressBarBg, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
+	TweenService:Create(loadIconStroke, TweenInfo.new(0.3), {Transparency = 1}):Play()
+	TweenService:Create(loadBlade, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
+	TweenService:Create(loadBarrel, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
+	for _, dot in ipairs(spinnerDots) do
+		TweenService:Create(dot, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
+	end
+	fadeTween:Play()
+	iconFadeTween:Play()
+
+	fadeTween.Completed:Wait()
+	loadingScreen.Visible = false
+	loadingScreen:Destroy()
+
+	-- ============================================
+	-- HIỆU ỨNG BẬT UI CHÍNH LẦN ĐẦU (scale + fade vào, sau khi loading xong)
+	-- ============================================
+	mainPanel.Visible = true
+	mainPanel.Size = UDim2.new(0, 260 * 0.85, 0, 220 * 0.85)
+	mainPanel.BackgroundTransparency = 1
+	stroke.Transparency = 1
+	glow.BackgroundTransparency = 1
+
+	TweenService:Create(mainPanel, TweenInfo.new(0.28, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+		Size = UDim2.new(0, 260, 0, 220),
+		BackgroundTransparency = 0,
+	}):Play()
+	TweenService:Create(stroke, TweenInfo.new(0.3), {Transparency = 0.25}):Play()
+	TweenService:Create(glow, TweenInfo.new(0.3), {BackgroundTransparency = 0.93}):Play()
+
+	-- Cập nhật lại vị trí căn giữa sau khi đổi size (vì Size neo theo offset, không neo scale/anchor)
+	mainPanel.Position = UDim2.new(0.5, -130, 0.5, -110)
 end)
 
--- Ping (ms) - lấy từ Stats service
+-- ============================================
+-- CẬP NHẬT DỮ LIỆU (có hiệu ứng flash + màu theo trạng thái)
+-- ============================================
+usernameValue.Text = player.Name
+statusValue.Text = "● Online"
+statusValue.TextColor3 = Color3.fromRGB(90, 220, 130)
+
+-- Giờ: chỉ flash mỗi khi giây thay đổi, không flash liên tục mỗi frame
+do
+	local lastSecond = nil
+	RunService.Heartbeat:Connect(function()
+		local nowText = os.date("%H:%M:%S")
+		if nowText ~= hourValue.Text then
+			hourValue.Text = nowText
+			if lastSecond then flashHour() end
+			lastSecond = nowText
+		end
+	end)
+end
+
+-- Ping (ms) - lấy từ Stats service, tô màu xanh/đỏ/vàng theo chất lượng mạng
 task.spawn(function()
 	while task.wait(1) do
 		local ok, ping = pcall(function()
@@ -468,13 +804,16 @@ task.spawn(function()
 		end)
 		if ok and ping then
 			pingValue.Text = math.floor(ping) .. " ms"
+			colorizeByThreshold(pingValue, ping, 60, 150, false) -- thấp = tốt
 		else
 			pingValue.Text = "N/A"
+			pingValue.TextColor3 = PALETTE.TextGray
 		end
+		flashPing()
 	end
 end)
 
--- FPS - đo qua Heartbeat
+-- FPS - đo qua Heartbeat, tô màu theo mức mượt
 do
 	local frameCount = 0
 	local fpsTimer = 0
@@ -483,6 +822,8 @@ do
 		fpsTimer += dt
 		if fpsTimer >= 1 then
 			fpsValue.Text = tostring(frameCount)
+			colorizeByThreshold(fpsValue, frameCount, 50, 30, true) -- cao = tốt
+			flashFps()
 			frameCount = 0
 			fpsTimer = 0
 		end
@@ -491,28 +832,82 @@ end
 
 -- ============================================
 -- KIỂM SOÁT UI - BẬT/TẮT (toggle switch, nút X, nút nổi) - KHÔNG DÙNG PHÍM
+-- Có hiệu ứng scale + fade mượt khi bật/tắt
 -- ============================================
 local uiVisible = true
+local animating = false
+
+local PANEL_SIZE = UDim2.new(0, 260, 0, 220)
+local PANEL_POS = UDim2.new(0.5, -130, 0.5, -110)
 
 local function setUIVisible(visible)
+	if animating then return end
+	if visible == uiVisible then return end
+	animating = true
 	uiVisible = visible
-	mainPanel.Visible = visible
-	floatBtn.Visible = not visible
 
+	-- Trượt knob của toggle switch theo trạng thái
 	local knobTarget = visible and UDim2.new(1, -14, 0.5, -6) or UDim2.new(0, 2, 0.5, -6)
 	local bgTarget = visible and PALETTE.Red or Color3.fromRGB(40, 35, 36)
 	TweenService:Create(toggleKnob, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {Position = knobTarget}):Play()
 	TweenService:Create(toggleBtn, TweenInfo.new(0.15), {BackgroundColor3 = bgTarget}):Play()
 
+	if visible then
+		-- BẬT: hiện nút nổi biến mất trước, panel phóng to + fade vào
+		floatBtn.Visible = false
+		mainPanel.Visible = true
+		mainPanel.Size = UDim2.new(0, 260 * 0.85, 0, 220 * 0.85)
+		mainPanel.Position = UDim2.new(0.5, -110.5, 0.5, -93.5)
+		mainPanel.BackgroundTransparency = 1
+		stroke.Transparency = 1
+		glow.BackgroundTransparency = 1
+
+		local tw = TweenService:Create(mainPanel, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+			Size = PANEL_SIZE,
+			Position = PANEL_POS,
+			BackgroundTransparency = 0,
+		})
+		TweenService:Create(stroke, TweenInfo.new(0.28), {Transparency = 0.25}):Play()
+		TweenService:Create(glow, TweenInfo.new(0.28), {BackgroundTransparency = 0.93}):Play()
+		tw:Play()
+		tw.Completed:Wait()
+	else
+		-- TẮT: panel co lại + fade ra, sau đó hiện nút nổi với hiệu ứng bật lên
+		local currentPos = mainPanel.Position
+		local tw = TweenService:Create(mainPanel, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+			Size = UDim2.new(0, 260 * 0.85, 0, 220 * 0.85),
+			Position = UDim2.new(currentPos.X.Scale, currentPos.X.Offset + 19.5, currentPos.Y.Scale, currentPos.Y.Offset + 16.5),
+			BackgroundTransparency = 1,
+		})
+		TweenService:Create(stroke, TweenInfo.new(0.18), {Transparency = 1}):Play()
+		TweenService:Create(glow, TweenInfo.new(0.18), {BackgroundTransparency = 1}):Play()
+		tw:Play()
+		tw.Completed:Wait()
+		mainPanel.Visible = false
+		-- Reset lại size/pos/transparency để lần bật sau đúng chuẩn
+		mainPanel.Size = PANEL_SIZE
+		mainPanel.Position = PANEL_POS
+		mainPanel.BackgroundTransparency = 0
+		stroke.Transparency = 0.25
+		glow.BackgroundTransparency = 0.93
+
+		floatBtn.Visible = true
+		floatBtn.Size = UDim2.new(0, 0, 0, 0)
+		TweenService:Create(floatBtn, TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+			Size = UDim2.new(0, 34, 0, 34),
+		}):Play()
+	end
+
 	print("UI toggled: " .. tostring(visible))
+	animating = false
 end
 
 toggleBtn.MouseButton1Click:Connect(function()
-	setUIVisible(not uiVisible)
+	task.spawn(setUIVisible, not uiVisible)
 end)
 
 closeBtn.MouseButton1Click:Connect(function()
-	setUIVisible(false)
+	task.spawn(setUIVisible, false)
 end)
 
 closeBtn.MouseEnter:Connect(function()
@@ -523,7 +918,7 @@ closeBtn.MouseLeave:Connect(function()
 end)
 
 floatBtn.MouseButton1Click:Connect(function()
-	setUIVisible(true)
+	task.spawn(setUIVisible, true)
 end)
 
 floatBtn.MouseEnter:Connect(function()
