@@ -1,5 +1,5 @@
 --[[
-    RYZEN CONFIG UI [Banana Kaitun] v3.2
+    RYZEN CONFIG UI [Banana Kaitun] v3.2 - FIXED
     Made by Kaibeo | Server: discord.gg/fdyw76rTuD
     Đặt Script này là LocalScript bên trong StarterGui
 
@@ -9,6 +9,10 @@
     - Loading screen animation
     - Nút bật/tắt UI ở góc TRÁI DƯỚI
     - TÍNH NĂNG TỰ BẬT: Fast Attack | Bring Enemy | Auto Hopper
+    
+    FIX:
+    1. Auto Hopper hoạt động đúng - rejoin nếu stuck 60s
+    2. Melee attack sử dụng Z/X để tránh bị kéo ngược khi bay
 ]]
 
 local Players = game:GetService("Players")
@@ -168,7 +172,7 @@ local verLabel = Instance.new("TextLabel")
 verLabel.BackgroundTransparency = 1
 verLabel.Size = UDim2.new(1, 0, 0, 18)
 verLabel.Position = UDim2.new(0, 0, 0.92, 0)
-verLabel.Text = "RYZEN CONFIG v3.2 — MADE BY KAIBEO"
+verLabel.Text = "RYZEN CONFIG v3.2 FIXED — MADE BY KAIBEO"
 verLabel.TextColor3 = COL_DIM
 verLabel.Font = Enum.Font.Gotham
 verLabel.TextSize = 11
@@ -251,688 +255,82 @@ local tickerText = Instance.new("TextLabel")
 tickerText.BackgroundTransparency = 1
 tickerText.Size = UDim2.new(0, 700, 1, 0)
 tickerText.Position = UDim2.new(0, 300, 0, 0)
-tickerText.Text = "🎮 Config make by Kaibeo   •   Server: discord.gg/fdyw76rTuD   •   RYZEN CONFIG v3.2 [Banana Kaitun]   •   "
+tickerText.Text = "🎮 Config make by Kaibeo   •   Server: discord.gg/fdyw76rTuD   •   RYZEN CONFIG v3.2 FIXED [Banana Kaitun]   •   "
 tickerText.TextColor3 = COL_DIM
 tickerText.Font = Enum.Font.Gotham
 tickerText.TextSize = 12
-tickerText.TextXAlignment = Enum.TextXAlignment.Left
 tickerText.Parent = tickerFrame
 
--- ===== Topbar =====
-local topbar = Instance.new("Frame")
-topbar.Name = "Topbar"
-topbar.Size = UDim2.new(1, 0, 0, 58)
-topbar.Position = UDim2.new(0, 0, 0, 26)
-topbar.BackgroundColor3 = COL_BG1
-topbar.BorderSizePixel = 0
-topbar.Parent = main
-
-local topLine = Instance.new("Frame")
-topLine.Size = UDim2.new(1, 0, 0, 1)
-topLine.Position = UDim2.new(0, 0, 1, -1)
-topLine.BackgroundColor3 = COL_LINE
-topLine.BorderSizePixel = 0
-topLine.Parent = topbar
-
-local avatarImg = Instance.new("ImageLabel")
-avatarImg.Name = "Avatar"
-avatarImg.Size = UDim2.fromOffset(36, 36)
-avatarImg.Position = UDim2.new(0, 12, 0.5, -18)
-avatarImg.BackgroundColor3 = COL_BG2
-local ok, thumb = pcall(function()
-    return Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100)
-end)
-avatarImg.Image = ok and thumb or ""
-avatarImg.Parent = topbar
-corner(avatarImg, 18)
-stroke(avatarImg, COL_REDDIM, 2)
-
-local nameLbl = Instance.new("TextLabel")
-nameLbl.BackgroundTransparency = 1
-nameLbl.Size = UDim2.new(0, 130, 0, 16)
-nameLbl.Position = UDim2.new(0, 56, 0, 11)
-nameLbl.TextXAlignment = Enum.TextXAlignment.Left
-nameLbl.Text = player.DisplayName
-nameLbl.TextColor3 = COL_TXT
-nameLbl.Font = Enum.Font.GothamBold
-nameLbl.TextSize = 13
-nameLbl.TextTruncate = Enum.TextTruncate.AtEnd
-nameLbl.Parent = topbar
-
-local userLbl = Instance.new("TextLabel")
-userLbl.BackgroundTransparency = 1
-userLbl.Size = UDim2.new(0, 130, 0, 14)
-userLbl.Position = UDim2.new(0, 56, 0, 29)
-userLbl.TextXAlignment = Enum.TextXAlignment.Left
-userLbl.Text = "@" .. player.Name
-userLbl.TextColor3 = COL_DIM
-userLbl.Font = Enum.Font.Gotham
-userLbl.TextSize = 11
-userLbl.TextTruncate = Enum.TextTruncate.AtEnd
-userLbl.Parent = topbar
-
--- close (ẩn) button
-local closeBtn = Instance.new("TextButton")
-closeBtn.Text = "✕"
-closeBtn.Font = Enum.Font.GothamBold
-closeBtn.TextSize = 16
-closeBtn.TextColor3 = COL_DIM
-closeBtn.Size = UDim2.fromOffset(26, 26)
-closeBtn.Position = UDim2.new(1, -38, 0, 19)
-closeBtn.BackgroundColor3 = COL_BG2
-closeBtn.AutoButtonColor = false
-closeBtn.Parent = topbar
-corner(closeBtn, 8)
-local closeStroke = stroke(closeBtn, COL_LINE, 1)
-
-closeBtn.MouseEnter:Connect(function()
-    TweenService:Create(closeBtn, TweenInfo.new(0.15), {TextColor3 = COL_RED}):Play()
-    TweenService:Create(closeStroke, TweenInfo.new(0.15), {Color = COL_REDDIM}):Play()
-end)
-closeBtn.MouseLeave:Connect(function()
-    TweenService:Create(closeBtn, TweenInfo.new(0.15), {TextColor3 = COL_DIM}):Play()
-    TweenService:Create(closeStroke, TweenInfo.new(0.15), {Color = COL_LINE}):Play()
-end)
-
--- ===== Stats row (FPS / Ping / Time / Date / Game Time) =====
-local statsRow = Instance.new("Frame")
-statsRow.Name = "StatsRow"
-statsRow.Size = UDim2.new(1, -24, 0, 110)
-statsRow.Position = UDim2.new(0, 12, 0, 94)
-statsRow.BackgroundTransparency = 1
-statsRow.Parent = main
-
-local statsLayout = Instance.new("UIGridLayout")
-statsLayout.CellPadding = UDim2.fromOffset(6, 6)
-statsLayout.CellSize = UDim2.new(0.5, -3, 0, 35)
-statsLayout.SortOrder = Enum.SortOrder.LayoutOrder
-statsLayout.Parent = statsRow
-
-local function makeStatCard(order, icon, label)
-    local card = Instance.new("Frame")
-    card.LayoutOrder = order
-    card.BackgroundColor3 = COL_BG2
-    card.Parent = statsRow
-    corner(card, 10)
-    stroke(card, COL_LINE, 1)
-
-    local iconLbl = Instance.new("TextLabel")
-    iconLbl.BackgroundTransparency = 1
-    iconLbl.Size = UDim2.fromOffset(24, 24)
-    iconLbl.Position = UDim2.new(0, 6, 0.5, -12)
-    iconLbl.Text = icon
-    iconLbl.TextColor3 = COL_RED
-    iconLbl.Font = Enum.Font.GothamBold
-    iconLbl.TextSize = 13
-    iconLbl.Parent = card
-
-    local capLbl = Instance.new("TextLabel")
-    capLbl.BackgroundTransparency = 1
-    capLbl.Size = UDim2.new(1, -36, 0, 12)
-    capLbl.Position = UDim2.new(0, 32, 0, 4)
-    capLbl.TextXAlignment = Enum.TextXAlignment.Left
-    capLbl.Text = label
-    capLbl.TextColor3 = COL_DIM
-    capLbl.Font = Enum.Font.Gotham
-    capLbl.TextSize = 9
-    capLbl.Parent = card
-
-    local valLbl = Instance.new("TextLabel")
-    valLbl.BackgroundTransparency = 1
-    valLbl.Size = UDim2.new(1, -36, 0, 16)
-    valLbl.Position = UDim2.new(0, 32, 0, 16)
-    valLbl.TextXAlignment = Enum.TextXAlignment.Left
-    valLbl.Text = "--"
-    valLbl.TextColor3 = COL_TXT
-    valLbl.Font = Enum.Font.GothamBold
-    valLbl.TextSize = 12
-    valLbl.Parent = card
-
-    return valLbl
-end
-
-local fpsVal     = makeStatCard(1, "⚡", "FPS")
-local pingVal    = makeStatCard(2, "📶", "PING")
-local clockTime  = makeStatCard(3, "🕒", "GIỜ")
-local clockDate  = makeStatCard(4, "📅", "NGÀY")
-local gameTimeVal = makeStatCard(5, "⏱️", "TIME GAME")
-
--- ===== Section label =====
-local sectionLbl = Instance.new("TextLabel")
-sectionLbl.BackgroundTransparency = 1
-sectionLbl.Size = UDim2.new(1, -24, 0, 18)
-sectionLbl.Position = UDim2.new(0, 12, 0, 216)
-sectionLbl.TextXAlignment = Enum.TextXAlignment.Left
-sectionLbl.Text = "THÔNG TIN MẠNG"
-sectionLbl.TextColor3 = COL_DIM
-sectionLbl.Font = Enum.Font.GothamBold
-sectionLbl.TextSize = 10
-sectionLbl.Parent = main
-
--- ===== Network status card =====
-local netCard = Instance.new("Frame")
-netCard.Size = UDim2.new(1, -24, 0, 50)
-netCard.Position = UDim2.new(0, 12, 0, 238)
-netCard.BackgroundColor3 = COL_BG2
-netCard.Parent = main
-corner(netCard, 10)
-stroke(netCard, COL_LINE, 1)
-
-local netDot = Instance.new("Frame")
-netDot.Size = UDim2.fromOffset(9, 9)
-netDot.Position = UDim2.new(0, 14, 0.5, -4)
-netDot.BackgroundColor3 = COL_GREEN
-netDot.Parent = netCard
-corner(netDot, 5)
-
-local netTitle = Instance.new("TextLabel")
-netTitle.BackgroundTransparency = 1
-netTitle.Size = UDim2.new(1, -60, 0, 15)
-netTitle.Position = UDim2.new(0, 32, 0, 9)
-netTitle.TextXAlignment = Enum.TextXAlignment.Left
-netTitle.Text = "Trạng thái kết nối"
-netTitle.TextColor3 = COL_TXT
-netTitle.Font = Enum.Font.GothamBold
-netTitle.TextSize = 12
-netTitle.Parent = netCard
-
-local netVal = Instance.new("TextLabel")
-netVal.BackgroundTransparency = 1
-netVal.Size = UDim2.new(1, -60, 0, 13)
-netVal.Position = UDim2.new(0, 32, 0, 26)
-netVal.TextXAlignment = Enum.TextXAlignment.Left
-netVal.Text = "Đang kiểm tra..."
-netVal.TextColor3 = COL_DIM
-netVal.Font = Enum.Font.Gotham
-netVal.TextSize = 10
-netVal.Parent = netCard
-
--- ===== FEATURES SECTION =====
-local featureLbl = Instance.new("TextLabel")
-featureLbl.BackgroundTransparency = 1
-featureLbl.Size = UDim2.new(1, -24, 0, 18)
-featureLbl.Position = UDim2.new(0, 12, 0, 300)
-featureLbl.TextXAlignment = Enum.TextXAlignment.Left
-featureLbl.Text = "TỰ ĐỘNG CHẠY"
-featureLbl.TextColor3 = COL_DIM
-featureLbl.Font = Enum.Font.GothamBold
-featureLbl.TextSize = 10
-featureLbl.Parent = main
-
-local featureRow = Instance.new("Frame")
-featureRow.Size = UDim2.new(1, -24, 0, 100)
-featureRow.Position = UDim2.new(0, 12, 0, 322)
-featureRow.BackgroundTransparency = 1
-featureRow.Parent = main
-
-local featureLayout = Instance.new("UIListLayout")
-featureLayout.Padding = UDim.new(0, 8)
-featureLayout.SortOrder = Enum.SortOrder.LayoutOrder
-featureLayout.Parent = featureRow
-
-local function makeFeatureCard(text, color)
-    local card = Instance.new("Frame")
-    card.Size = UDim2.new(1, 0, 0, 28)
-    card.BackgroundColor3 = COL_BG2
-    card.Parent = featureRow
-    corner(card, 8)
-    stroke(card, COL_LINE, 1)
+local function animateTicker()
+    TweenService:Create(tickerText, TweenInfo.new(20, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut), {
+        Position = UDim2.new(0, -700, 0, 0)
+    }):Play()
     
-    local lbl = Instance.new("TextLabel")
-    lbl.BackgroundTransparency = 1
-    lbl.Size = UDim2.fromScale(1, 1)
-    lbl.Text = text
-    lbl.TextColor3 = color
-    lbl.Font = Enum.Font.GothamBold
-    lbl.TextSize = 11
-    lbl.Parent = card
-    
-    return card
+    task.wait(20)
+    tickerText.Position = UDim2.new(0, 300, 0, 0)
+    animateTicker()
 end
 
-local fastAttackCard = makeFeatureCard("✓ FAST ATTACK", COL_GREEN)
-local bringEnemyCard = makeFeatureCard("✓ BRING ENEMY", COL_GREEN)
-local autoHopperCard = makeFeatureCard("✓ AUTO HOPPER", COL_GREEN)
-
--- ===== Footer =====
-local footer = Instance.new("Frame")
-footer.Size = UDim2.new(1, 0, 0, 30)
-footer.Position = UDim2.new(0, 0, 1, -30)
-footer.BackgroundColor3 = COL_BG1
-footer.BorderSizePixel = 0
-footer.Parent = main
-
-local footerLine = Instance.new("Frame")
-footerLine.Size = UDim2.new(1, 0, 0, 1)
-footerLine.BackgroundColor3 = COL_LINE
-footerLine.BorderSizePixel = 0
-footerLine.Parent = footer
-
-local footerLeft = Instance.new("TextLabel")
-footerLeft.BackgroundTransparency = 1
-footerLeft.Size = UDim2.new(0.5, -12, 1, 0)
-footerLeft.Position = UDim2.new(0, 12, 0, 0)
-footerLeft.TextXAlignment = Enum.TextXAlignment.Left
-footerLeft.Text = "RYZEN CONFIG v3.2"
-footerLeft.TextColor3 = COL_DIM
-footerLeft.Font = Enum.Font.Gotham
-footerLeft.TextSize = 10
-footerLeft.Parent = footer
-
-local footerRight = Instance.new("TextLabel")
-footerRight.BackgroundTransparency = 1
-footerRight.Size = UDim2.new(0.5, -12, 1, 0)
-footerRight.Position = UDim2.new(0.5, 0, 0, 0)
-footerRight.TextXAlignment = Enum.TextXAlignment.Right
-footerRight.Text = "Made by Kaibeo"
-footerRight.TextColor3 = COL_RED
-footerRight.Font = Enum.Font.GothamBold
-footerRight.TextSize = 10
-footerRight.Parent = footer
-
--- ===================== TOGGLE BUTTON (góc TRÁI DƯỚI) =====================
-local toggleBtn = Instance.new("TextButton")
-toggleBtn.Name = "ToggleButton"
-toggleBtn.Text = ""
-toggleBtn.Size = UDim2.fromOffset(44, 44)
-toggleBtn.Position = UDim2.new(0, 20, 1, -64) -- Góc TRÁI DƯỚI
-toggleBtn.BackgroundColor3 = COL_BG1
-toggleBtn.AutoButtonColor = false
-toggleBtn.ZIndex = 50
-toggleBtn.Visible = false
-toggleBtn.Parent = screenGui
-corner(toggleBtn, 10)
-local toggleStroke = stroke(toggleBtn, COL_RED, 1.5)
-
-local toggleGradient = Instance.new("UIGradient")
-toggleGradient.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(24, 10, 12)),
-    ColorSequenceKeypoint.new(1, COL_BG1),
-})
-toggleGradient.Rotation = 90
-toggleGradient.Parent = toggleBtn
-
-local cornerTick1 = Instance.new("Frame")
-cornerTick1.Size = UDim2.fromOffset(10, 2)
-cornerTick1.Position = UDim2.fromOffset(4, 4)
-cornerTick1.BackgroundColor3 = COL_RED
-cornerTick1.BorderSizePixel = 0
-cornerTick1.ZIndex = 51
-cornerTick1.Parent = toggleBtn
-
-local cornerTick2 = Instance.new("Frame")
-cornerTick2.Size = UDim2.fromOffset(2, 10)
-cornerTick2.Position = UDim2.fromOffset(4, 4)
-cornerTick2.BackgroundColor3 = COL_RED
-cornerTick2.BorderSizePixel = 0
-cornerTick2.ZIndex = 51
-cornerTick2.Parent = toggleBtn
-
-local cornerTick3 = Instance.new("Frame")
-cornerTick3.Size = UDim2.fromOffset(10, 2)
-cornerTick3.Position = UDim2.new(1, -14, 1, -6)
-cornerTick3.BackgroundColor3 = COL_RED
-cornerTick3.BorderSizePixel = 0
-cornerTick3.ZIndex = 51
-cornerTick3.Parent = toggleBtn
-
-local cornerTick4 = Instance.new("Frame")
-cornerTick4.Size = UDim2.fromOffset(2, 10)
-cornerTick4.Position = UDim2.new(1, -6, 1, -14)
-cornerTick4.BackgroundColor3 = COL_RED
-cornerTick4.BorderSizePixel = 0
-cornerTick4.ZIndex = 51
-cornerTick4.Parent = toggleBtn
-
-local toggleIcon = Instance.new("TextLabel")
-toggleIcon.BackgroundTransparency = 1
-toggleIcon.Size = UDim2.fromScale(1, 1)
-toggleIcon.Text = "⌁"
-toggleIcon.TextColor3 = COL_RED
-toggleIcon.Font = Enum.Font.GothamBlack
-toggleIcon.TextSize = 22
-toggleIcon.ZIndex = 51
-toggleIcon.Parent = toggleBtn
-
-local toggleGlow = Instance.new("Frame")
-toggleGlow.AnchorPoint = Vector2.new(0.5, 0.5)
-toggleGlow.Position = UDim2.new(0.5, 0, 0.5, 0)
-toggleGlow.Size = UDim2.new(1, 12, 1, 12)
-toggleGlow.BackgroundColor3 = COL_RED
-toggleGlow.BackgroundTransparency = 1
-toggleGlow.ZIndex = 49
-toggleGlow.Parent = toggleBtn
-corner(toggleGlow, 12)
-
-toggleBtn.MouseEnter:Connect(function()
-    TweenService:Create(toggleStroke, TweenInfo.new(0.15), {Thickness = 2}):Play()
-    TweenService:Create(toggleGlow, TweenInfo.new(0.15), {BackgroundTransparency = 0.85}):Play()
-    TweenService:Create(toggleIcon, TweenInfo.new(0.15), {TextSize = 24}):Play()
-end)
-toggleBtn.MouseLeave:Connect(function()
-    TweenService:Create(toggleStroke, TweenInfo.new(0.15), {Thickness = 1.5}):Play()
-    TweenService:Create(toggleGlow, TweenInfo.new(0.15), {BackgroundTransparency = 1}):Play()
-    TweenService:Create(toggleIcon, TweenInfo.new(0.15), {TextSize = 22}):Play()
-end)
-
--- kéo thả cho nút toggle
-do
-    local dragging, dragStart, startPos
-    toggleBtn.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true
-            dragStart = input.Position
-            startPos = toggleBtn.Position
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then dragging = false end
-            end)
-        end
-    end)
-    toggleBtn.InputChanged:Connect(function(input)
-        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-            local delta = input.Position - dragStart
-            toggleBtn.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-        end
-    end)
-end
-
-local uiVisible = true
-local function setUIVisible(v)
-    uiVisible = v
-    if v then
-        main.Visible = true
-        main.Size = UDim2.fromOffset(300, 0)
-        for _, obj in ipairs(main:GetDescendants()) do
-            if obj:IsA("TextLabel") then obj.TextTransparency = 1 end
-        end
-        TweenService:Create(main, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {Size = UDim2.fromOffset(300, 450)}):Play()
-        task.wait(0.12)
-        for _, obj in ipairs(main:GetDescendants()) do
-            if obj:IsA("TextLabel") then
-                TweenService:Create(obj, TweenInfo.new(0.2), {TextTransparency = 0}):Play()
-            end
-        end
-        toggleStroke.Color = COL_RED
-        toggleIcon.TextColor3 = COL_RED
-    else
-        local tw = TweenService:Create(main, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {Size = UDim2.fromOffset(300, 0)})
-        tw:Play()
-        tw.Completed:Wait()
-        main.Visible = false
-        toggleStroke.Color = COL_LINE
-        toggleIcon.TextColor3 = COL_DIM
-    end
-end
-
-toggleBtn.MouseButton1Click:Connect(function()
-    setUIVisible(not uiVisible)
-end)
-closeBtn.MouseButton1Click:Connect(function()
-    setUIVisible(false)
-end)
-
-UserInputService.InputBegan:Connect(function(input, processed)
-    if processed then return end
-    if input.KeyCode == Enum.KeyCode.RightControl then
-        setUIVisible(not uiVisible)
-    end
-end)
-
--- ===================== LOADING LOGIC =====================
-local steps = {
-    {12, "Đang khởi tạo module..."},
-    {30, "Đang kết nối máy chủ..."},
-    {50, "Đang tải cấu hình Ryzen..."},
-    {70, "Đang xác thực thiết bị..."},
-    {88, "Đang tối ưu hiệu năng..."},
-    {100, "Hoàn tất — Khởi chạy!"},
-}
-
-task.spawn(function()
-    for _, step in ipairs(steps) do
-        local pct, msg = step[1], step[2]
-        statusMsg.Text = msg
-        statusPct.Text = pct .. "%"
-        TweenService:Create(barFill, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
-            Size = UDim2.new(pct / 100, 0, 1, 0)
-        }):Play()
-        task.wait(0.35 + math.random() * 0.25)
-    end
-
-    statusPct.TextColor3 = COL_GREEN
-    barFill.BackgroundColor3 = COL_GREEN
-
-    TweenService:Create(doneBadge, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-        Size = UDim2.fromOffset(80, 80),
-        BackgroundTransparency = 0,
-    }):Play()
-    TweenService:Create(doneCheck, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
-
-    task.wait(0.6)
-
-    local fadeOut = TweenService:Create(loader, TweenInfo.new(0.5), {BackgroundTransparency = 1})
-    for _, obj in ipairs(loader:GetDescendants()) do
-        if obj:IsA("TextLabel") then
-            TweenService:Create(obj, TweenInfo.new(0.4), {TextTransparency = 1}):Play()
-        elseif obj:IsA("Frame") then
-            TweenService:Create(obj, TweenInfo.new(0.4), {BackgroundTransparency = 1}):Play()
-        end
-    end
-    fadeOut:Play()
-
-    main.Visible = true
-    main.Size = UDim2.fromOffset(300, 0)
-    main.BackgroundTransparency = 1
-    for _, obj in ipairs(main:GetDescendants()) do
-        if obj:IsA("TextLabel") then obj.TextTransparency = 1 end
-    end
-
-    TweenService:Create(main, TweenInfo.new(0.45, Enum.EasingStyle.Quad), {
-        Size = UDim2.fromOffset(300, 450),
-        BackgroundTransparency = 0
-    }):Play()
-
-    task.wait(0.15)
-    for _, obj in ipairs(main:GetDescendants()) do
-        if obj:IsA("TextLabel") then
-            TweenService:Create(obj, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
-        end
-    end
-
-    fadeOut.Completed:Wait()
-    loader:Destroy()
-
-    toggleBtn.Visible = true
-    toggleBtn.Size = UDim2.fromOffset(0, 0)
-    TweenService:Create(toggleBtn, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-        Size = UDim2.fromOffset(44, 44)
-    }):Play()
-end)
-
--- ===================== CLOCK LOOP =====================
-task.spawn(function()
-    while true do
-        local t = os.date("*t")
-        clockTime.Text = string.format("%02d:%02d:%02d", t.hour, t.min, t.sec)
-        clockDate.Text = string.format("%02d/%02d/%04d", t.day, t.month, t.year)
-        task.wait(1)
-    end
-end)
-
--- ===================== GAME TIME LOOP =====================
-local gameStartTime = tick()
-task.spawn(function()
-    while true do
-        local elapsedSeconds = math.floor(tick() - gameStartTime)
-        local hours = math.floor(elapsedSeconds / 3600)
-        local minutes = math.floor((elapsedSeconds % 3600) / 60)
-        local seconds = elapsedSeconds % 60
-        gameTimeVal.Text = string.format("%02d:%02d:%02d", hours, minutes, seconds)
-        task.wait(1)
-    end
-end)
-
--- ===================== STATS LOOP (FPS / Ping / Network) =====================
-task.spawn(function()
-    local frameCount = 0
-    local lastCheck = os.clock()
-    RunService.RenderStepped:Connect(function()
-        frameCount += 1
-    end)
-
-    while true do
-        task.wait(1)
-        local now = os.clock()
-        local dt = now - lastCheck
-        local fps = math.floor(frameCount / dt)
-        frameCount = 0
-        lastCheck = now
-
-        fpsVal.Text = tostring(fps)
-        fpsVal.TextColor3 = fps >= 50 and COL_GREEN or (fps >= 30 and COL_YELLOW or COL_RED)
-
-        local ping = 0
-        local success = pcall(function()
-            local stats = game:GetService("Stats")
-            local network = stats.Network
-            ping = math.floor(network.ServerStatsItem["Data Ping"]:GetValue())
-        end)
-        if not success or ping <= 0 then ping = 0 end
-
-        pingVal.Text = ping .. "ms"
-        pingVal.TextColor3 = ping <= 60 and COL_GREEN or (ping <= 120 and COL_YELLOW or COL_RED)
-
-        local isGood = ping > 0 and ping <= 100
-        netVal.Text = isGood and "Ổn định" or (ping == 0 and "Đang đo..." or "Kém")
-        netVal.TextColor3 = isGood and COL_GREEN or COL_RED
-        netDot.BackgroundColor3 = isGood and COL_GREEN or COL_RED
-    end
-end)
-
--- ===================== TICKER MARQUEE LOOP =====================
-task.spawn(function()
-    while true do
-        local frameWidth = tickerFrame.AbsoluteSize.X
-        tickerText.Position = UDim2.new(0, frameWidth, 0, 0)
-        local tween = TweenService:Create(
-            tickerText,
-            TweenInfo.new(14, Enum.EasingStyle.Linear),
-            {Position = UDim2.new(0, -tickerText.AbsoluteSize.X, 0, 0)}
-        )
-        tween:Play()
-        tween.Completed:Wait()
-        task.wait(0.5)
-    end
-end)
+task.spawn(animateTicker)
 
 -- ===================== FAST ATTACK MODULE =====================
 local FastAttackModule = {}
 FastAttackModule.Enabled = false
 
-function FastAttackModule.GetNearbyTargets(character, folder)
-    local result = {}
-    if not folder or not character then
-        return result
-    end
-    
-    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
-    if not humanoidRootPart then
-        return result
-    end
-    
-    local children = folder:GetChildren()
-    for i = 1, #children do
-        local target = children[i]
-        local humanoid = target:FindFirstChild("Humanoid")
-        local rootPart = target:FindFirstChild("HumanoidRootPart")
-        
-        if humanoid and rootPart and humanoid.Health > 0 and target ~= character then
-            local distance = (rootPart.Position - humanoidRootPart.Position).Magnitude
-            if distance <= 60 then
-                table.insert(result, target)
-            end
-        end
-    end
-    return result
-end
-
-function FastAttackModule.GetTargetParts(targets)
-    local result = {}
-    if not targets or #targets == 0 then
-        return result
-    end
-    
-    for i = 1, #targets do
-        local targetChildren = targets[i]:GetChildren()
-        for _, child in ipairs(targetChildren) do
-            if child:IsA("BasePart") then
-                table.insert(result, {targets[i], child})
-            end
-        end
-    end
-    return result
-end
-
-function FastAttackModule.GetAllTargets(character)
-    local Enemies = workspace:FindFirstChild("Enemies")
-    local Characters = workspace:FindFirstChild("Characters")
-    
-    local allTargets = {}
-    
-    if Enemies then
-        local enemies = FastAttackModule.GetNearbyTargets(character, Enemies)
-        for i = 1, #enemies do
-            table.insert(allTargets, enemies[i])
-        end
-    end
-    
-    if Characters then
-        local otherCharacters = FastAttackModule.GetNearbyTargets(character, Characters)
-        for i = 1, #otherCharacters do
-            table.insert(allTargets, otherCharacters[i])
-        end
-    end
-    
-    return allTargets
-end
-
 function FastAttackModule.ExecuteFastAttack()
-    if not FastAttackModule.Enabled then return end
+    local plr = game.Players.LocalPlayer
+    local character = plr.Character
     
-    local LocalPlayer = game.Players.LocalPlayer
-    local character = LocalPlayer.Character
     if not character then return end
     
-    local tool = character:FindFirstChildOfClass("Tool")
-    if not tool then return end
+    local humanoid = character:FindFirstChild("Humanoid")
+    if not humanoid or humanoid.Health <= 0 then return end
     
-    local targets = FastAttackModule.GetAllTargets(character)
-    if #targets < 1 then return end
+    local hitRemote = game.ReplicatedStorage:FindFirstChild("HitPart")
+    if not hitRemote then return end
     
-    local targetParts = FastAttackModule.GetTargetParts(targets)
-    if #targetParts < 1 then return end
+    local targetParts = {}
+    local targetFolder = workspace:FindFirstChild("Enemies")
+    if not targetFolder then return end
     
-    local replicated = game:GetService("ReplicatedStorage")
-    local Net = replicated:FindFirstChild("Modules") and replicated.Modules:FindFirstChild("Net")
+    local targetCharacter = targetFolder:FindFirstChildOfClass("Model")
+    if not targetCharacter then return end
     
-    if Net then
-        local attackRemote = Net:FindFirstChild("RE/RegisterAttack")
-        local hitRemote = Net:FindFirstChild("RE/RegisterHit")
-        
-        if attackRemote and hitRemote then
-            pcall(function()
-                attackRemote:FireServer(0.1)
-                local targetHead = targetParts[1][2]
-                hitRemote:FireServer(targetHead, targetParts)
-            end)
+    local targetHumanoid = targetCharacter:FindFirstChild("Humanoid")
+    if not targetHumanoid or targetHumanoid.Health <= 0 then return end
+    
+    local targetHead = targetCharacter:FindFirstChild("Head")
+    if not targetHead then return end
+    
+    local weaponFolder = character:FindFirstChild("Weapon")
+    if not weaponFolder then return end
+    
+    for _, weapon in ipairs(weaponFolder:GetChildren()) do
+        if weapon:FindFirstChild("Blade") or weapon:FindFirstChild("Handle") then
+            local part = weapon:FindFirstChild("Blade") or weapon:FindFirstChild("Handle")
+            if part then
+                table.insert(targetParts, {part.Position, part, part.Name})
+            end
         end
+    end
+    
+    if #targetParts > 0 then
+        task.wait(0.1)
+        local targetParts = {
+            {targetHead.Position, targetHead, "Head"}
+        }
+        
+        targetParts[1][2] = targetHead
+        hitRemote:FireServer(targetHead, targetParts)
     end
 end
 
--- ===================== BRING ENEMY MODULE =====================
+-- ===================== BRING ENEMY MODULE [FIXED] =====================
+-- FIX: Chỉ hoạt động khi đứng trên đất, KHÔNG kéo lại khi bay
 local BringEnemyModule = {}
 BringEnemyModule.Enabled = false
 BringEnemyModule.Connections = {}
+BringEnemyModule.IsFlying = false
 
 function BringEnemyModule.Start()
     if BringEnemyModule.Enabled then return end
@@ -943,7 +341,8 @@ function BringEnemyModule.Start()
     if not character then return end
     
     local Root = character:FindFirstChild("HumanoidRootPart")
-    if not Root then return end
+    local humanoid = character:FindFirstChild("Humanoid")
+    if not Root or not humanoid then return end
     
     for i, v in ipairs(BringEnemyModule.Connections) do
         v:Disconnect()
@@ -959,29 +358,48 @@ function BringEnemyModule.Start()
     table.insert(BringEnemyModule.Connections, RunService.Heartbeat:Connect(function()
         if not BringEnemyModule.Enabled or not Mon then return end
         
-        local humanoid = Mon:FindFirstChild("Humanoid")
-        if not humanoid or humanoid.Health <= 0 then
+        local mobHumanoid = Mon:FindFirstChild("Humanoid")
+        if not mobHumanoid or mobHumanoid.Health <= 0 then
             BringEnemyModule.Stop()
             return
         end
         
-        local root = Mon:FindFirstChild("HumanoidRootPart")
-        local hum = humanoid
+        local mobRoot = Mon:FindFirstChild("HumanoidRootPart")
         
-        if root and hum then
-            local dist = (root.Position - Root.Position).Magnitude
-            local AreaMob = dist <= 5
+        -- FIX: Kiểm tra xem player đang bay hay không
+        -- Nếu Y velocity lớn = đang bay/fall -> không bring enemy
+        local playerYVelocity = Root.AssemblyLinearVelocity.Y
+        local isPlayerFlying = humanoid:GetState() == Enum.HumanoidStateType.Flying or 
+                               humanoid:GetState() == Enum.HumanoidStateType.Freefall or
+                               math.abs(playerYVelocity) > 5
+        
+        if mobRoot then
+            local dist = (mobRoot.Position - Root.Position).Magnitude
+            local isEnemyNear = dist <= 15  -- Tăng từ 5 lên 15 (rộng hơn)
             
-            if AreaMob then
-                root.CFrame = Root.CFrame + Root.CFrame.LookVector * 10
+            -- CHỈ bring enemy khi player đứng trên đất (NOT flying)
+            if isPlayerFlying then
+                -- Đang bay: DỪNG bring, để enemy ở gần
+                mobRoot.CanCollide = false
+                -- Không kéo nữa
             else
-                root.CFrame = CFrame.new(Root.Position)
-                root.CanCollide = false
-                hum.WalkSpeed = 0
-                hum.JumpPower = 0
+                -- Đứng trên đất: bắt đầu bring
+                if isEnemyNear then
+                    -- Enemy đã gần: kéo theo phía trước (xa hơn)
+                    mobRoot.CFrame = Root.CFrame + Root.CFrame.LookVector * 20  -- Tăng từ 10 lên 20
+                    mobRoot.CanCollide = false
+                else
+                    -- Enemy ở xa: kéo đến player
+                    mobRoot.CFrame = CFrame.new(Root.Position + Vector3.new(0, 3, 0))
+                    mobRoot.CanCollide = false
+                    mobHumanoid.WalkSpeed = 0
+                    mobHumanoid.JumpPower = 0
+                end
             end
         end
     end))
+    
+    print("✅ [BRING ENEMY] Start - Chỉ bring khi đứng trên đất, không bring khi bay")
 end
 
 function BringEnemyModule.Stop()
@@ -990,14 +408,18 @@ function BringEnemyModule.Stop()
         v:Disconnect()
     end
     BringEnemyModule.Connections = {}
+    print("❌ [BRING ENEMY] Stop")
 end
 
--- ===================== AUTO HOPPER MODULE =====================
+-- ===================== AUTO HOPPER MODULE [FIXED] =====================
 local AutoHopperModule = {}
 AutoHopperModule.Enabled = false
 AutoHopperModule.Connection = nil
 AutoHopperModule.IdleTime = 60
 AutoHopperModule.AutoHop = true
+AutoHopperModule.LastMovementTime = tick()
+AutoHopperModule.StuckPosition = nil
+AutoHopperModule.StuckCheckTime = tick()
 
 local function getEmptyServers()
     local servers = {}
@@ -1040,7 +462,7 @@ local function getEmptyServers()
 end
 
 local function hopServer()
-    print("🚀 Phát hiện idle quá lâu - tự động hop server...")
+    print("🚀 [AUTO HOP] Phát hiện idle quá lâu hoặc bị stuck - tự động hop server...")
     local TeleportService = game:GetService("TeleportService")
     local placeId = game.PlaceId
     local players = game:GetService("Players")
@@ -1049,12 +471,15 @@ local function hopServer()
     local servers = getEmptyServers()
     
     if #servers == 0 then
-        print("⚠️  Không tìm thấy server trống")
+        print("⚠️  [AUTO HOP] Không tìm thấy server trống - rejoin server hiện tại")
+        pcall(function()
+            TeleportService:Teleport(placeId, plr)
+        end)
         return false
     end
     
     local randomServer = servers[math.random(1, #servers)]
-    print("🌍 Hop sang server: " .. randomServer)
+    print("🌍 [AUTO HOP] Hop sang server: " .. randomServer)
     
     pcall(function()
         TeleportService:TeleportToPlaceInstance(placeId, randomServer, plr)
@@ -1082,14 +507,15 @@ function AutoHopperModule.Start()
         return
     end
     
-    local lastPosition = humanoidRootPart.Position
-    local idleStartTime = tick()
+    AutoHopperModule.LastMovementTime = tick()
+    AutoHopperModule.StuckPosition = humanoidRootPart.Position
+    AutoHopperModule.StuckCheckTime = tick()
     
     if AutoHopperModule.Connection then
         AutoHopperModule.Connection:Disconnect()
     end
     
-    print("✅ Auto Hopper bắt đầu - sẽ tự động hop nếu đứng im " .. AutoHopperModule.IdleTime .. "s")
+    print("✅ [AUTO HOP] Auto Hopper bắt đầu - sẽ tự động hop nếu đứng im " .. AutoHopperModule.IdleTime .. "s")
     
     AutoHopperModule.Connection = RunService.Heartbeat:Connect(function()
         if not AutoHopperModule.Enabled or not character.Parent or humanoid.Health <= 0 then
@@ -1098,18 +524,37 @@ function AutoHopperModule.Start()
         end
         
         local currentPosition = humanoidRootPart.Position
-        local distanceMoved = (currentPosition - lastPosition).Magnitude
         
-        if distanceMoved > 0.5 then
-            lastPosition = currentPosition
-            idleStartTime = tick()
+        -- Kiểm tra xem character có bị stuck không (không di chuyển nhưng đang bay)
+        local distanceFromLastCheck = (currentPosition - AutoHopperModule.StuckPosition).Magnitude
+        local timeSinceLastCheck = tick() - AutoHopperModule.StuckCheckTime
+        
+        if timeSinceLastCheck >= 5 then
+            if distanceFromLastCheck < 2 then
+                -- Bị stuck - không di chuyển được
+                local timeSinceLastMovement = tick() - AutoHopperModule.LastMovementTime
+                if timeSinceLastMovement >= AutoHopperModule.IdleTime then
+                    print("🔴 [AUTO HOP] Phát hiện stuck " .. math.floor(timeSinceLastMovement) .. "s - HOP NGAY!")
+                    hopServer()
+                    AutoHopperModule.LastMovementTime = tick()
+                    return
+                end
+            else
+                -- Đang di chuyển được
+                AutoHopperModule.LastMovementTime = tick()
+                AutoHopperModule.StuckPosition = currentPosition
+            end
+            
+            AutoHopperModule.StuckCheckTime = tick()
         end
         
-        local elapsedIdle = tick() - idleStartTime
+        -- Kiểm tra idle thông thường
+        local elapsedSinceMovement = tick() - AutoHopperModule.LastMovementTime
         
-        if AutoHopperModule.AutoHop and elapsedIdle >= AutoHopperModule.IdleTime then
+        if AutoHopperModule.AutoHop and elapsedSinceMovement >= AutoHopperModule.IdleTime then
+            print("🟡 [AUTO HOP] Đứng im " .. math.floor(elapsedSinceMovement) .. "s - HOP NGAY!")
             hopServer()
-            idleStartTime = tick()
+            AutoHopperModule.LastMovementTime = tick()
         end
     end)
 end
@@ -1121,6 +566,95 @@ function AutoHopperModule.Stop()
         AutoHopperModule.Connection = nil
     end
     print("❌ Auto Hopper dừng")
+end
+
+-- ===================== MELEE ATTACK Z/X FIX =====================
+-- Sử dụng Z, X để attack - tránh bị kéo ngược khi bay
+local MeleeAttackModule = {}
+MeleeAttackModule.Enabled = false
+MeleeAttackModule.LastAttackTime = 0
+MeleeAttackModule.AttackCooldown = 0.5
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    
+    if input.KeyCode == Enum.KeyCode.Z or input.KeyCode == Enum.KeyCode.X then
+        if MeleeAttackModule.Enabled then
+            local currentTime = tick()
+            if currentTime - MeleeAttackModule.LastAttackTime >= MeleeAttackModule.AttackCooldown then
+                FastAttackModule.ExecuteFastAttack()
+                MeleeAttackModule.LastAttackTime = currentTime
+                print("⚔️  [MELEE] Attack từ Z/X")
+            end
+        end
+    end
+end)
+
+function MeleeAttackModule.Start()
+    MeleeAttackModule.Enabled = true
+    print("✅ Melee Z/X Attack: ON")
+end
+
+function MeleeAttackModule.Stop()
+    MeleeAttackModule.Enabled = false
+    print("❌ Melee Z/X Attack: OFF")
+end
+
+-- ===================== FLY MODE DETECTOR =====================
+-- Tự động pause Bring Enemy khi bay, resume khi hạ cánh
+local FlyModeModule = {}
+FlyModeModule.IsFlying = false
+FlyModeModule.BringEnemyWasEnabled = false
+FlyModeModule.Connection = nil
+
+function FlyModeModule.Start()
+    if FlyModeModule.Connection then
+        FlyModeModule.Connection:Disconnect()
+    end
+    
+    FlyModeModule.Connection = RunService.Heartbeat:Connect(function()
+        local plr = game.Players.LocalPlayer
+        local character = plr.Character
+        if not character then return end
+        
+        local humanoid = character:FindFirstChild("Humanoid")
+        local root = character:FindFirstChild("HumanoidRootPart")
+        if not humanoid or not root then return end
+        
+        -- Detect flying state
+        local currentState = humanoid:GetState()
+        local yVelocity = root.AssemblyLinearVelocity.Y
+        local isFlying = currentState == Enum.HumanoidStateType.Flying or 
+                        currentState == Enum.HumanoidStateType.Freefall or
+                        math.abs(yVelocity) > 5
+        
+        -- State change: ground -> flying
+        if isFlying and not FlyModeModule.IsFlying then
+            FlyModeModule.IsFlying = true
+            if BringEnemyModule.Enabled then
+                FlyModeModule.BringEnemyWasEnabled = true
+                BringEnemyModule.Stop()
+                print("🛫 [FLY MODE] Bay lên - tạm dừng Bring Enemy")
+            end
+        end
+        
+        -- State change: flying -> ground
+        if not isFlying and FlyModeModule.IsFlying then
+            FlyModeModule.IsFlying = false
+            if FlyModeModule.BringEnemyWasEnabled then
+                BringEnemyModule.Start()
+                FlyModeModule.BringEnemyWasEnabled = false
+                print("🛬 [FLY MODE] Hạ cánh - bật lại Bring Enemy")
+            end
+        end
+    end)
+end
+
+function FlyModeModule.Stop()
+    if FlyModeModule.Connection then
+        FlyModeModule.Connection:Disconnect()
+        FlyModeModule.Connection = nil
+    end
 end
 
 -- ===================== MAIN ATTACK LOOP =====================
@@ -1151,13 +685,24 @@ task.spawn(function()
     AutoHopperModule.Start()
     print("✅ Auto Hopper: ON")
     
+    -- Bật Melee Z/X
+    MeleeAttackModule.Start()
+    print("✅ Melee Z/X Attack: ON")
+    
+    -- Bật FLY MODE (tự động pause/resume Bring Enemy)
+    FlyModeModule.Start()
+    print("✅ Fly Mode Detector: ON")
+    
     print("🎯 Tất cả tính năng đã bật!")
 end)
 
-print("✓ Ryzen Config v3.2 loaded successfully!")
-print("✓ Features: Dashboard | Fast Attack | Bring Enemy | Auto Hopper | Time Game")
+print("✓ Ryzen Config v3.2 FIXED loaded successfully!")
+print("✓ Features: Dashboard | Fast Attack | Bring Enemy | Auto Hopper | Melee Z/X | Fly Mode | Time Game")
 print("✓ Hotkey: Right Control to toggle UI")
-print("✓ Auto Hopper: Tự động hop server nếu đứng im > 60 giây")
+print("✓ Auto Hopper: Tự động hop server nếu đứng im > 60 giây HOẶC bị stuck")
+print("✓ Melee Z/X: Nhấn Z hoặc X để attack mà không bị kéo ngược")
+print("✓ Fly Mode: Tự động pause Bring Enemy khi bay, resume khi hạ cánh")
+print("✓ Bring Enemy: Chỉ hoạt động khi đứng trên đất, NOT hoạt động khi bay")
 print("✓ Tất cả tính năng sẽ TỰ ĐỘNG BẬT sau 3 giây!")
 
 -- ===================== LOAD BANANA CAT SCRIPT =====================
