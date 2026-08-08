@@ -412,37 +412,84 @@ function HitRegistrationModule.Execute()
     end
 end
 
--- Auto Rejoin System
+-- ===================== AUTO REJOIN SYSTEM [IMPROVED] =====================
+-- Tracking variables for stuck detection
+local lastPositionCheck = os.time()
+local lastPositionRecorded = Vector3.new(0, 0, 0)
+local stuckTimer = 0
+local hasMovedRecently = true
+local STUCK_THRESHOLD = 60 -- 60 seconds before rejoin
+local SKILL_SPAM_INTERVAL = 300 -- 5 minutes (300 seconds)
+
 local function CheckStuckStatus()
     if not Character or not Root then return end
     
     local humanoid = Character:FindFirstChild("Humanoid")
     
     if humanoid and humanoid.Health > 0 then
-        if os.time() - lastMoveTime > 60 then
-            if os.time() - lastSkillTime > SKILL_INTERVAL then
-                pcall(function()
-                    local UIS = game:GetService("UserInputService")
-                    
+        local currentTime = os.time()
+        local currentPos = Root.Position
+        
+        -- ✓ Every 5 minutes: Spam Z and X keys (không rejoin, chỉ spam skill)
+        if currentTime - lastSkillTime >= SKILL_SPAM_INTERVAL then -- 300 seconds = 5 minutes
+            pcall(function()
+                local UIS = game:GetService("UserInputService")
+                
+                print("🎯 [AUTO] 5-minute skill spam - Z & X!")
+                
+                -- Spam Z multiple times
+                for i = 1, 2 do
                     UIS:SendKeyEvent(true, Enum.KeyCode.Z, false, game)
-                    task.wait(0.1)
+                    task.wait(0.05)
                     UIS:SendKeyEvent(false, Enum.KeyCode.Z, false, game)
-                    
-                    task.wait(0.5)
-                    
+                    task.wait(0.15)
+                end
+                
+                task.wait(0.3)
+                
+                -- Spam X multiple times
+                for i = 1, 2 do
                     UIS:SendKeyEvent(true, Enum.KeyCode.X, false, game)
-                    task.wait(0.1)
+                    task.wait(0.05)
                     UIS:SendKeyEvent(false, Enum.KeyCode.X, false, game)
-                    
-                    lastSkillTime = os.time()
-                    print("🔥 [AUTO] Skill Z/X activated!")
-                end)
+                    task.wait(0.15)
+                end
+                
+                lastSkillTime = currentTime
+            end)
+        end
+        
+        -- ✓ Monitor if character is stuck (not moving for 60 seconds)
+        if currentTime - lastPositionCheck >= 2 then -- Check every 2 seconds
+            local positionDifference = (currentPos - lastPositionRecorded).Magnitude
+            
+            if positionDifference < 0.5 then -- Position hasn't changed much (stuck)
+                stuckTimer = stuckTimer + (currentTime - lastPositionCheck)
+                hasMovedRecently = false
+            else
+                stuckTimer = 0
+                hasMovedRecently = true
+                lastPositionRecorded = currentPos
             end
             
+            lastPositionCheck = currentTime
+            
+            -- Debug: Show stuck timer every 10 seconds
+            if stuckTimer > 0 and stuckTimer % 10 < 2 then
+                print("⏱️ [STUCK] Bị stuck " .. math.floor(stuckTimer) .. "s... (rejoin at " .. STUCK_THRESHOLD .. "s)")
+            end
+        end
+        
+        -- ✓ REJOIN if stuck for 60+ seconds (triggered by tween being stuck or mid-flight stuck)
+        if stuckTimer >= STUCK_THRESHOLD then
             if not isStuck then
                 isStuck = true
-                print("⚠️ [AUTO] Bị stuck quá 60 giây, đang rejoin...")
-                task.wait(5)
+                print("❌ [REJOIN] Character stuck for " .. STUCK_THRESHOLD .. "s!")
+                print("📍 Vị trí bị stuck: " .. tostring(lastPositionRecorded))
+                print("🔄 Đang rejoin server (same place/job)...")
+                
+                task.wait(2) -- Wait 2 seconds before rejoin to ensure disconnect
+                
                 pcall(function()
                     game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId, plr)
                 end)
@@ -462,6 +509,10 @@ local function MonitorMovement()
             if Root.Velocity.Magnitude > 0.5 then
                 lastMoveTime = os.time()
                 isStuck = false
+                -- Reset stuck timer when movement is detected
+                stuckTimer = 0
+                hasMovedRecently = true
+                lastPositionRecorded = Root.Position
             end
         end
     end))
@@ -542,8 +593,10 @@ task.spawn(function()
     
     task.spawn(function()
         pcall(function()
+            print("📦 [ADDON] Loading BananaCat addon...")
             loadstring(game:HttpGet("https://raw.githubusercontent.com/obiiyeuem/vthangsitink/main/BananaCat-kaitunBF.lua"))()
-            print("✓ [ADDON] BananaCat addon đã tải thành công!")
+            print("✓ [ADDON] BananaCat addon loaded successfully!")
+            print("🎮 [ADDON] BananaCat is now active!")
         end)
     end)
     
@@ -571,10 +624,18 @@ task.spawn(function()
 end)
 
 print("═══════════════════════════════════════════════════════════")
-print("          🎮 COMBINED v3.0 OPTIMIZED - LOADING 🎮")
+print("          🎮 COMBINED v3.1 OPTIMIZED - LOADING 🎮")
 print("═══════════════════════════════════════════════════════════")
 print("✅ UI System (RyzenConfigUI v3.2 - OPTIMIZED)")
 print("✅ Game Script (CombinedScript_FIXED)")
-print("✅ Auto Bring, Auto Rejoin, Auto Skill")
-print("✅ BananaCat Addon (Loading asynchronously...)")
+print("✅ Auto Bring, Auto Skill (Every 5 minutes)")
+print("✅ Auto Rejoin System (60s stuck detection)")
+print("✅ BananaCat Addon (Loading async...)")
+print("   📦 URL: raw.githubusercontent.com/obiiyeuem/vthangsitink/main/BananaCat-kaitunBF.lua")
+print("═══════════════════════════════════════════════════════════")
+print("🔄 REJOIN SYSTEM v3.1 - FEATURES:")
+print("   • Spam Z & X every 5 minutes (no rejoin)")
+print("   • Auto rejoin when stuck 60 seconds")
+print("   • Position-based stuck detection")
+print("   • Debug logs in F9 console")
 print("═══════════════════════════════════════════════════════════")
