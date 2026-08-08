@@ -1,24 +1,16 @@
 --[[
-    RYZEN CONFIG v3.2 - INTEGRATED VERSION
+    RYZEN CONFIG UI [Banana Kaitun] v3.2
     Made by Kaibeo | Server: discord.gg/fdyw76rTuD
-    
-    TÍCH HỢP CÁC MODULE:
-    1. RYZEN CONFIG UI [Banana Kaitun] v3.0
-    2. FAST ATTACK MODULE (Extracted from Bloxfruit)
-    3. BRING ENEMY FUNCTION
-    
     Đặt Script này là LocalScript bên trong StarterGui
-    
-    BẢO GỒM:
-    - Avatar, Ping, FPS, Giờ, Ngày
+
+    Đây là bảng thông tin (info dashboard) cho Roblox:
+    - Avatar, Ping, FPS, Giờ, Ngày, TIME GAME
     - Ticker chữ chạy ngang
     - Loading screen animation
-    - Nút bật/tắt UI (mở/ẩn bảng chính)
-    - Fast Attack Module
-    - Bring Enemy Function
+    - Nút bật/tắt UI ở góc TRÁI DƯỚI
+    - TÍNH NĂNG TỰ BẬT: Fast Attack | Bring Enemy | Auto Hopper
 ]]
 
--- ===================== SERVICES & VARIABLES =====================
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -38,7 +30,14 @@ local COL_DIM    = Color3.fromRGB(138, 138, 144)
 local COL_GREEN  = Color3.fromRGB(61, 220, 132)
 local COL_YELLOW = Color3.fromRGB(255, 200, 60)
 
--- ===================== UTILITY FUNCTIONS =====================
+-- ===================== ROOT GUI =====================
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "RyzenConfigUI"
+screenGui.ResetOnSpawn = false
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+screenGui.Parent = player:WaitForChild("PlayerGui")
+
+-- Helper: add corner
 local function corner(parent, radius)
     local c = Instance.new("UICorner")
     c.CornerRadius = UDim.new(0, radius or 8)
@@ -46,6 +45,7 @@ local function corner(parent, radius)
     return c
 end
 
+-- Helper: add stroke
 local function stroke(parent, color, thickness)
     local s = Instance.new("UIStroke")
     s.Color = color or COL_LINE
@@ -53,13 +53,6 @@ local function stroke(parent, color, thickness)
     s.Parent = parent
     return s
 end
-
--- ===================== ROOT GUI =====================
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "RyzenConfigUI"
-screenGui.ResetOnSpawn = false
-screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-screenGui.Parent = player:WaitForChild("PlayerGui")
 
 -- ===================== LOADING SCREEN =====================
 local loader = Instance.new("Frame")
@@ -206,8 +199,8 @@ doneCheck.Parent = doneBadge
 -- ===================== MAIN FRAME =====================
 local main = Instance.new("Frame")
 main.Name = "Main"
-main.Size = UDim2.fromOffset(300, 360)
-main.Position = UDim2.new(0.5, -150, 0.5, -180)
+main.Size = UDim2.fromOffset(300, 450)
+main.Position = UDim2.new(0.5, -150, 0.5, -225)
 main.BackgroundColor3 = COL_BG1
 main.BorderSizePixel = 0
 main.Visible = false
@@ -216,7 +209,7 @@ main.Parent = screenGui
 corner(main, 14)
 stroke(main, COL_LINE, 1)
 
--- Draggable main frame
+-- Draggable
 do
     local dragging, dragStart, startPos
     main.InputBegan:Connect(function(input)
@@ -237,190 +230,359 @@ do
     end)
 end
 
--- ===================== UI COMPONENTS =====================
-
--- Header
-local header = Instance.new("Frame")
-header.Name = "Header"
-header.Size = UDim2.new(1, 0, 0, 50)
-header.BackgroundColor3 = COL_BG2
-header.BorderSizePixel = 0
-header.Parent = main
-stroke(header, COL_LINE, 1)
-
-local titleLabel = Instance.new("TextLabel")
-titleLabel.BackgroundTransparency = 1
-titleLabel.Size = UDim2.new(1, -50, 1, 0)
-titleLabel.Position = UDim2.new(0, 14, 0, 0)
-titleLabel.TextXAlignment = Enum.TextXAlignment.Left
-titleLabel.Text = "RYZEN CONFIG v3.2"
-titleLabel.TextColor3 = COL_TXT
-titleLabel.Font = Enum.Font.GothamBold
-titleLabel.TextSize = 14
-titleLabel.Parent = header
-
-local closeBtn = Instance.new("TextButton")
-closeBtn.Name = "CloseBtn"
-closeBtn.Size = UDim2.fromOffset(38, 38)
-closeBtn.Position = UDim2.new(1, -44, 0.5, -19)
-closeBtn.BackgroundColor3 = COL_BG2
-closeBtn.TextSize = 0
-closeBtn.BorderSizePixel = 0
-closeBtn.Parent = header
-corner(closeBtn, 8)
-
-local closeX = Instance.new("TextLabel")
-closeX.BackgroundTransparency = 1
-closeX.Size = UDim2.fromScale(1, 1)
-closeX.Text = "✕"
-closeX.TextColor3 = COL_RED
-closeX.Font = Enum.Font.GothamBlack
-closeX.TextSize = 16
-closeX.Parent = closeBtn
-
--- Content scroll
-local scrollFrame = Instance.new("ScrollingFrame")
-scrollFrame.Name = "ScrollFrame"
-scrollFrame.Size = UDim2.new(1, -4, 1, -60)
-scrollFrame.Position = UDim2.new(0, 2, 0, 52)
-scrollFrame.BackgroundTransparency = 1
-scrollFrame.BorderSizePixel = 0
-scrollFrame.ScrollBarThickness = 3
-scrollFrame.ScrollBarImageColor3 = COL_LINE
-scrollFrame.Parent = main
-
-local listLayout = Instance.new("UIListLayout")
-listLayout.Padding = UDim.new(0, 8)
-listLayout.SortOrder = Enum.SortOrder.LayoutOrder
-listLayout.Parent = scrollFrame
-
-local function addSection(name)
-    local section = Instance.new("Frame")
-    section.Name = name
-    section.Size = UDim2.new(1, -8, 0, 28)
-    section.BackgroundColor3 = COL_BG2
-    section.BorderSizePixel = 0
-    section.Parent = scrollFrame
-    corner(section, 8)
-    stroke(section, COL_LINE, 1)
-    
-    local label = Instance.new("TextLabel")
-    label.BackgroundTransparency = 1
-    label.Size = UDim2.new(1, 0, 1, 0)
-    label.Text = name
-    label.TextColor3 = COL_TXT
-    label.Font = Enum.Font.GothamBold
-    label.TextSize = 11
-    label.Parent = section
-    
-    return section
-end
-
-local function addStat(parent, label, value)
-    local statFrame = Instance.new("Frame")
-    statFrame.Size = UDim2.new(1, -8, 0, 24)
-    statFrame.BackgroundTransparency = 1
-    statFrame.Parent = parent
-    
-    local lblText = Instance.new("TextLabel")
-    lblText.BackgroundTransparency = 1
-    lblText.Size = UDim2.new(0.5, 0, 1, 0)
-    lblText.TextXAlignment = Enum.TextXAlignment.Left
-    lblText.Text = label
-    lblText.TextColor3 = COL_DIM
-    lblText.Font = Enum.Font.Gotham
-    lblText.TextSize = 10
-    lblText.Parent = statFrame
-    
-    local valText = Instance.new("TextLabel")
-    valText.BackgroundTransparency = 1
-    valText.Size = UDim2.new(0.5, 0, 1, 0)
-    valText.Position = UDim2.new(0.5, 0, 0, 0)
-    valText.TextXAlignment = Enum.TextXAlignment.Right
-    valText.Text = value or "---"
-    valText.TextColor3 = COL_GREEN
-    valText.Font = Enum.Font.GothamBold
-    valText.TextSize = 10
-    valText.Parent = statFrame
-    
-    return valText
-end
-
--- Info Section
-local infoSection = addSection("INFO")
-local avatarVal = addStat(scrollFrame, "Avatar:", player.Name)
-local pingVal = addStat(scrollFrame, "Ping:", "0ms")
-local fpsVal = addStat(scrollFrame, "FPS:", "0")
-local clockTime = addStat(scrollFrame, "Giờ:", "00:00:00")
-local clockDate = addStat(scrollFrame, "Ngày:", "00/00/0000")
-
--- Network Status
-local netSection = addSection("NETWORK")
-local netVal = addStat(scrollFrame, "Trạng thái:", "Đang đo...")
-local netDot = Instance.new("Frame")
-netDot.Size = UDim2.fromOffset(8, 8)
-netDot.Position = UDim2.new(0.85, 0, 0.02, 0)
-netDot.BackgroundColor3 = COL_RED
-netDot.BorderSizePixel = 0
-netDot.Parent = netSection
-corner(netDot, 4)
-
--- Ticker
+-- ===== Ticker (marquee) =====
 local tickerFrame = Instance.new("Frame")
-tickerFrame.Name = "TickerFrame"
-tickerFrame.Size = UDim2.new(1, -8, 0, 20)
-tickerFrame.BackgroundColor3 = COL_BG2
+tickerFrame.Name = "Ticker"
+tickerFrame.Size = UDim2.new(1, 0, 0, 26)
+tickerFrame.BackgroundColor3 = Color3.fromRGB(15, 5, 7)
 tickerFrame.BorderSizePixel = 0
 tickerFrame.ClipsDescendants = true
-tickerFrame.Parent = scrollFrame
-corner(tickerFrame, 6)
-stroke(tickerFrame, COL_LINE, 1)
+tickerFrame.Parent = main
+corner(tickerFrame, 14)
+
+local tickerBottomLine = Instance.new("Frame")
+tickerBottomLine.Size = UDim2.new(1, 0, 0, 1)
+tickerBottomLine.Position = UDim2.new(0, 0, 1, -1)
+tickerBottomLine.BackgroundColor3 = COL_REDDIM
+tickerBottomLine.BorderSizePixel = 0
+tickerBottomLine.Parent = tickerFrame
 
 local tickerText = Instance.new("TextLabel")
 tickerText.BackgroundTransparency = 1
-tickerText.Size = UDim2.new(0, 500, 1, 0)
-tickerText.Text = "⚙ RYZEN CONFIG v3.2 — FAST ATTACK | BRING ENEMY | CONFIG SYSTEM ⚙"
-tickerText.TextColor3 = COL_YELLOW
+tickerText.Size = UDim2.new(0, 700, 1, 0)
+tickerText.Position = UDim2.new(0, 300, 0, 0)
+tickerText.Text = "🎮 Config make by Kaibeo   •   Server: discord.gg/fdyw76rTuD   •   RYZEN CONFIG v3.2 [Banana Kaitun]   •   "
+tickerText.TextColor3 = COL_DIM
 tickerText.Font = Enum.Font.Gotham
-tickerText.TextSize = 9
+tickerText.TextSize = 12
+tickerText.TextXAlignment = Enum.TextXAlignment.Left
 tickerText.Parent = tickerFrame
 
--- Features Section
-local featuresSection = addSection("FEATURES")
+-- ===== Topbar =====
+local topbar = Instance.new("Frame")
+topbar.Name = "Topbar"
+topbar.Size = UDim2.new(1, 0, 0, 58)
+topbar.Position = UDim2.new(0, 0, 0, 26)
+topbar.BackgroundColor3 = COL_BG1
+topbar.BorderSizePixel = 0
+topbar.Parent = main
 
-local function createButton(parent, text, color)
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, -8, 0, 26)
-    btn.BackgroundColor3 = COL_BG2
-    btn.TextColor3 = color or COL_TXT
-    btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 11
-    btn.BorderSizePixel = 0
-    btn.Parent = parent
-    btn.Text = text
-    corner(btn, 6)
-    stroke(btn, COL_LINE, 1)
-    return btn
+local topLine = Instance.new("Frame")
+topLine.Size = UDim2.new(1, 0, 0, 1)
+topLine.Position = UDim2.new(0, 0, 1, -1)
+topLine.BackgroundColor3 = COL_LINE
+topLine.BorderSizePixel = 0
+topLine.Parent = topbar
+
+local avatarImg = Instance.new("ImageLabel")
+avatarImg.Name = "Avatar"
+avatarImg.Size = UDim2.fromOffset(36, 36)
+avatarImg.Position = UDim2.new(0, 12, 0.5, -18)
+avatarImg.BackgroundColor3 = COL_BG2
+local ok, thumb = pcall(function()
+    return Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100)
+end)
+avatarImg.Image = ok and thumb or ""
+avatarImg.Parent = topbar
+corner(avatarImg, 18)
+stroke(avatarImg, COL_REDDIM, 2)
+
+local nameLbl = Instance.new("TextLabel")
+nameLbl.BackgroundTransparency = 1
+nameLbl.Size = UDim2.new(0, 130, 0, 16)
+nameLbl.Position = UDim2.new(0, 56, 0, 11)
+nameLbl.TextXAlignment = Enum.TextXAlignment.Left
+nameLbl.Text = player.DisplayName
+nameLbl.TextColor3 = COL_TXT
+nameLbl.Font = Enum.Font.GothamBold
+nameLbl.TextSize = 13
+nameLbl.TextTruncate = Enum.TextTruncate.AtEnd
+nameLbl.Parent = topbar
+
+local userLbl = Instance.new("TextLabel")
+userLbl.BackgroundTransparency = 1
+userLbl.Size = UDim2.new(0, 130, 0, 14)
+userLbl.Position = UDim2.new(0, 56, 0, 29)
+userLbl.TextXAlignment = Enum.TextXAlignment.Left
+userLbl.Text = "@" .. player.Name
+userLbl.TextColor3 = COL_DIM
+userLbl.Font = Enum.Font.Gotham
+userLbl.TextSize = 11
+userLbl.TextTruncate = Enum.TextTruncate.AtEnd
+userLbl.Parent = topbar
+
+-- close (ẩn) button
+local closeBtn = Instance.new("TextButton")
+closeBtn.Text = "✕"
+closeBtn.Font = Enum.Font.GothamBold
+closeBtn.TextSize = 16
+closeBtn.TextColor3 = COL_DIM
+closeBtn.Size = UDim2.fromOffset(26, 26)
+closeBtn.Position = UDim2.new(1, -38, 0, 19)
+closeBtn.BackgroundColor3 = COL_BG2
+closeBtn.AutoButtonColor = false
+closeBtn.Parent = topbar
+corner(closeBtn, 8)
+local closeStroke = stroke(closeBtn, COL_LINE, 1)
+
+closeBtn.MouseEnter:Connect(function()
+    TweenService:Create(closeBtn, TweenInfo.new(0.15), {TextColor3 = COL_RED}):Play()
+    TweenService:Create(closeStroke, TweenInfo.new(0.15), {Color = COL_REDDIM}):Play()
+end)
+closeBtn.MouseLeave:Connect(function()
+    TweenService:Create(closeBtn, TweenInfo.new(0.15), {TextColor3 = COL_DIM}):Play()
+    TweenService:Create(closeStroke, TweenInfo.new(0.15), {Color = COL_LINE}):Play()
+end)
+
+-- ===== Stats row (FPS / Ping / Time / Date / Game Time) =====
+local statsRow = Instance.new("Frame")
+statsRow.Name = "StatsRow"
+statsRow.Size = UDim2.new(1, -24, 0, 110)
+statsRow.Position = UDim2.new(0, 12, 0, 94)
+statsRow.BackgroundTransparency = 1
+statsRow.Parent = main
+
+local statsLayout = Instance.new("UIGridLayout")
+statsLayout.CellPadding = UDim2.fromOffset(6, 6)
+statsLayout.CellSize = UDim2.new(0.5, -3, 0, 35)
+statsLayout.SortOrder = Enum.SortOrder.LayoutOrder
+statsLayout.Parent = statsRow
+
+local function makeStatCard(order, icon, label)
+    local card = Instance.new("Frame")
+    card.LayoutOrder = order
+    card.BackgroundColor3 = COL_BG2
+    card.Parent = statsRow
+    corner(card, 10)
+    stroke(card, COL_LINE, 1)
+
+    local iconLbl = Instance.new("TextLabel")
+    iconLbl.BackgroundTransparency = 1
+    iconLbl.Size = UDim2.fromOffset(24, 24)
+    iconLbl.Position = UDim2.new(0, 6, 0.5, -12)
+    iconLbl.Text = icon
+    iconLbl.TextColor3 = COL_RED
+    iconLbl.Font = Enum.Font.GothamBold
+    iconLbl.TextSize = 13
+    iconLbl.Parent = card
+
+    local capLbl = Instance.new("TextLabel")
+    capLbl.BackgroundTransparency = 1
+    capLbl.Size = UDim2.new(1, -36, 0, 12)
+    capLbl.Position = UDim2.new(0, 32, 0, 4)
+    capLbl.TextXAlignment = Enum.TextXAlignment.Left
+    capLbl.Text = label
+    capLbl.TextColor3 = COL_DIM
+    capLbl.Font = Enum.Font.Gotham
+    capLbl.TextSize = 9
+    capLbl.Parent = card
+
+    local valLbl = Instance.new("TextLabel")
+    valLbl.BackgroundTransparency = 1
+    valLbl.Size = UDim2.new(1, -36, 0, 16)
+    valLbl.Position = UDim2.new(0, 32, 0, 16)
+    valLbl.TextXAlignment = Enum.TextXAlignment.Left
+    valLbl.Text = "--"
+    valLbl.TextColor3 = COL_TXT
+    valLbl.Font = Enum.Font.GothamBold
+    valLbl.TextSize = 12
+    valLbl.Parent = card
+
+    return valLbl
 end
 
-local fastAttackBtn = createButton(scrollFrame, "🚀 FAST ATTACK", COL_RED)
-local bringEnemyBtn = createButton(scrollFrame, "🎯 BRING ENEMY", COL_YELLOW)
-local autoHopperBtn = createButton(scrollFrame, "🌍 AUTO HOPPER", COL_GREEN)
+local fpsVal     = makeStatCard(1, "⚡", "FPS")
+local pingVal    = makeStatCard(2, "📶", "PING")
+local clockTime  = makeStatCard(3, "🕒", "GIỜ")
+local clockDate  = makeStatCard(4, "📅", "NGÀY")
+local gameTimeVal = makeStatCard(5, "⏱️", "TIME GAME")
 
--- ===================== TOGGLE BUTTON =====================
+-- ===== Section label =====
+local sectionLbl = Instance.new("TextLabel")
+sectionLbl.BackgroundTransparency = 1
+sectionLbl.Size = UDim2.new(1, -24, 0, 18)
+sectionLbl.Position = UDim2.new(0, 12, 0, 216)
+sectionLbl.TextXAlignment = Enum.TextXAlignment.Left
+sectionLbl.Text = "THÔNG TIN MẠNG"
+sectionLbl.TextColor3 = COL_DIM
+sectionLbl.Font = Enum.Font.GothamBold
+sectionLbl.TextSize = 10
+sectionLbl.Parent = main
+
+-- ===== Network status card =====
+local netCard = Instance.new("Frame")
+netCard.Size = UDim2.new(1, -24, 0, 50)
+netCard.Position = UDim2.new(0, 12, 0, 238)
+netCard.BackgroundColor3 = COL_BG2
+netCard.Parent = main
+corner(netCard, 10)
+stroke(netCard, COL_LINE, 1)
+
+local netDot = Instance.new("Frame")
+netDot.Size = UDim2.fromOffset(9, 9)
+netDot.Position = UDim2.new(0, 14, 0.5, -4)
+netDot.BackgroundColor3 = COL_GREEN
+netDot.Parent = netCard
+corner(netDot, 5)
+
+local netTitle = Instance.new("TextLabel")
+netTitle.BackgroundTransparency = 1
+netTitle.Size = UDim2.new(1, -60, 0, 15)
+netTitle.Position = UDim2.new(0, 32, 0, 9)
+netTitle.TextXAlignment = Enum.TextXAlignment.Left
+netTitle.Text = "Trạng thái kết nối"
+netTitle.TextColor3 = COL_TXT
+netTitle.Font = Enum.Font.GothamBold
+netTitle.TextSize = 12
+netTitle.Parent = netCard
+
+local netVal = Instance.new("TextLabel")
+netVal.BackgroundTransparency = 1
+netVal.Size = UDim2.new(1, -60, 0, 13)
+netVal.Position = UDim2.new(0, 32, 0, 26)
+netVal.TextXAlignment = Enum.TextXAlignment.Left
+netVal.Text = "Đang kiểm tra..."
+netVal.TextColor3 = COL_DIM
+netVal.Font = Enum.Font.Gotham
+netVal.TextSize = 10
+netVal.Parent = netCard
+
+-- ===== FEATURES SECTION =====
+local featureLbl = Instance.new("TextLabel")
+featureLbl.BackgroundTransparency = 1
+featureLbl.Size = UDim2.new(1, -24, 0, 18)
+featureLbl.Position = UDim2.new(0, 12, 0, 300)
+featureLbl.TextXAlignment = Enum.TextXAlignment.Left
+featureLbl.Text = "TỰ ĐỘNG CHẠY"
+featureLbl.TextColor3 = COL_DIM
+featureLbl.Font = Enum.Font.GothamBold
+featureLbl.TextSize = 10
+featureLbl.Parent = main
+
+local featureRow = Instance.new("Frame")
+featureRow.Size = UDim2.new(1, -24, 0, 100)
+featureRow.Position = UDim2.new(0, 12, 0, 322)
+featureRow.BackgroundTransparency = 1
+featureRow.Parent = main
+
+local featureLayout = Instance.new("UIListLayout")
+featureLayout.Padding = UDim.new(0, 8)
+featureLayout.SortOrder = Enum.SortOrder.LayoutOrder
+featureLayout.Parent = featureRow
+
+local function makeFeatureCard(text, color)
+    local card = Instance.new("Frame")
+    card.Size = UDim2.new(1, 0, 0, 28)
+    card.BackgroundColor3 = COL_BG2
+    card.Parent = featureRow
+    corner(card, 8)
+    stroke(card, COL_LINE, 1)
+    
+    local lbl = Instance.new("TextLabel")
+    lbl.BackgroundTransparency = 1
+    lbl.Size = UDim2.fromScale(1, 1)
+    lbl.Text = text
+    lbl.TextColor3 = color
+    lbl.Font = Enum.Font.GothamBold
+    lbl.TextSize = 11
+    lbl.Parent = card
+    
+    return card
+end
+
+local fastAttackCard = makeFeatureCard("✓ FAST ATTACK", COL_GREEN)
+local bringEnemyCard = makeFeatureCard("✓ BRING ENEMY", COL_GREEN)
+local autoHopperCard = makeFeatureCard("✓ AUTO HOPPER", COL_GREEN)
+
+-- ===== Footer =====
+local footer = Instance.new("Frame")
+footer.Size = UDim2.new(1, 0, 0, 30)
+footer.Position = UDim2.new(0, 0, 1, -30)
+footer.BackgroundColor3 = COL_BG1
+footer.BorderSizePixel = 0
+footer.Parent = main
+
+local footerLine = Instance.new("Frame")
+footerLine.Size = UDim2.new(1, 0, 0, 1)
+footerLine.BackgroundColor3 = COL_LINE
+footerLine.BorderSizePixel = 0
+footerLine.Parent = footer
+
+local footerLeft = Instance.new("TextLabel")
+footerLeft.BackgroundTransparency = 1
+footerLeft.Size = UDim2.new(0.5, -12, 1, 0)
+footerLeft.Position = UDim2.new(0, 12, 0, 0)
+footerLeft.TextXAlignment = Enum.TextXAlignment.Left
+footerLeft.Text = "RYZEN CONFIG v3.2"
+footerLeft.TextColor3 = COL_DIM
+footerLeft.Font = Enum.Font.Gotham
+footerLeft.TextSize = 10
+footerLeft.Parent = footer
+
+local footerRight = Instance.new("TextLabel")
+footerRight.BackgroundTransparency = 1
+footerRight.Size = UDim2.new(0.5, -12, 1, 0)
+footerRight.Position = UDim2.new(0.5, 0, 0, 0)
+footerRight.TextXAlignment = Enum.TextXAlignment.Right
+footerRight.Text = "Made by Kaibeo"
+footerRight.TextColor3 = COL_RED
+footerRight.Font = Enum.Font.GothamBold
+footerRight.TextSize = 10
+footerRight.Parent = footer
+
+-- ===================== TOGGLE BUTTON (góc TRÁI DƯỚI) =====================
 local toggleBtn = Instance.new("TextButton")
-toggleBtn.Name = "ToggleBtn"
+toggleBtn.Name = "ToggleButton"
+toggleBtn.Text = ""
 toggleBtn.Size = UDim2.fromOffset(44, 44)
-toggleBtn.Position = UDim2.new(1, -60, 1, -60)
+toggleBtn.Position = UDim2.new(0, 20, 1, -64) -- Góc TRÁI DƯỚI
 toggleBtn.BackgroundColor3 = COL_BG1
-toggleBtn.TextSize = 0
-toggleBtn.Visible = false
-toggleBtn.BorderSizePixel = 0
+toggleBtn.AutoButtonColor = false
 toggleBtn.ZIndex = 50
+toggleBtn.Visible = false
 toggleBtn.Parent = screenGui
-corner(toggleBtn, 12)
-
+corner(toggleBtn, 10)
 local toggleStroke = stroke(toggleBtn, COL_RED, 1.5)
+
+local toggleGradient = Instance.new("UIGradient")
+toggleGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(24, 10, 12)),
+    ColorSequenceKeypoint.new(1, COL_BG1),
+})
+toggleGradient.Rotation = 90
+toggleGradient.Parent = toggleBtn
+
+local cornerTick1 = Instance.new("Frame")
+cornerTick1.Size = UDim2.fromOffset(10, 2)
+cornerTick1.Position = UDim2.fromOffset(4, 4)
+cornerTick1.BackgroundColor3 = COL_RED
+cornerTick1.BorderSizePixel = 0
+cornerTick1.ZIndex = 51
+cornerTick1.Parent = toggleBtn
+
+local cornerTick2 = Instance.new("Frame")
+cornerTick2.Size = UDim2.fromOffset(2, 10)
+cornerTick2.Position = UDim2.fromOffset(4, 4)
+cornerTick2.BackgroundColor3 = COL_RED
+cornerTick2.BorderSizePixel = 0
+cornerTick2.ZIndex = 51
+cornerTick2.Parent = toggleBtn
+
+local cornerTick3 = Instance.new("Frame")
+cornerTick3.Size = UDim2.fromOffset(10, 2)
+cornerTick3.Position = UDim2.new(1, -14, 1, -6)
+cornerTick3.BackgroundColor3 = COL_RED
+cornerTick3.BorderSizePixel = 0
+cornerTick3.ZIndex = 51
+cornerTick3.Parent = toggleBtn
+
+local cornerTick4 = Instance.new("Frame")
+cornerTick4.Size = UDim2.fromOffset(2, 10)
+cornerTick4.Position = UDim2.new(1, -6, 1, -14)
+cornerTick4.BackgroundColor3 = COL_RED
+cornerTick4.BorderSizePixel = 0
+cornerTick4.ZIndex = 51
+cornerTick4.Parent = toggleBtn
 
 local toggleIcon = Instance.new("TextLabel")
 toggleIcon.BackgroundTransparency = 1
@@ -453,7 +615,7 @@ toggleBtn.MouseLeave:Connect(function()
     TweenService:Create(toggleIcon, TweenInfo.new(0.15), {TextSize = 22}):Play()
 end)
 
--- Draggable toggle button
+-- kéo thả cho nút toggle
 do
     local dragging, dragStart, startPos
     toggleBtn.InputBegan:Connect(function(input)
@@ -483,7 +645,7 @@ local function setUIVisible(v)
         for _, obj in ipairs(main:GetDescendants()) do
             if obj:IsA("TextLabel") then obj.TextTransparency = 1 end
         end
-        TweenService:Create(main, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {Size = UDim2.fromOffset(300, 360)}):Play()
+        TweenService:Create(main, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {Size = UDim2.fromOffset(300, 450)}):Play()
         task.wait(0.12)
         for _, obj in ipairs(main:GetDescendants()) do
             if obj:IsA("TextLabel") then
@@ -566,7 +728,7 @@ task.spawn(function()
     end
 
     TweenService:Create(main, TweenInfo.new(0.45, Enum.EasingStyle.Quad), {
-        Size = UDim2.fromOffset(300, 360),
+        Size = UDim2.fromOffset(300, 450),
         BackgroundTransparency = 0
     }):Play()
 
@@ -593,6 +755,19 @@ task.spawn(function()
         local t = os.date("*t")
         clockTime.Text = string.format("%02d:%02d:%02d", t.hour, t.min, t.sec)
         clockDate.Text = string.format("%02d/%02d/%04d", t.day, t.month, t.year)
+        task.wait(1)
+    end
+end)
+
+-- ===================== GAME TIME LOOP =====================
+local gameStartTime = tick()
+task.spawn(function()
+    while true do
+        local elapsedSeconds = math.floor(tick() - gameStartTime)
+        local hours = math.floor(elapsedSeconds / 3600)
+        local minutes = math.floor((elapsedSeconds % 3600) / 60)
+        local seconds = elapsedSeconds % 60
+        gameTimeVal.Text = string.format("%02d:%02d:%02d", hours, minutes, seconds)
         task.wait(1)
     end
 end)
@@ -652,7 +827,6 @@ end)
 
 -- ===================== FAST ATTACK MODULE =====================
 local FastAttackModule = {}
-FastAttackModule.Rate = 0.1
 FastAttackModule.Enabled = false
 
 function FastAttackModule.GetNearbyTargets(character, folder)
@@ -747,7 +921,7 @@ function FastAttackModule.ExecuteFastAttack()
         
         if attackRemote and hitRemote then
             pcall(function()
-                attackRemote:FireServer(FastAttackModule.Rate)
+                attackRemote:FireServer(0.1)
                 local targetHead = targetParts[1][2]
                 hitRemote:FireServer(targetHead, targetParts)
             end)
@@ -822,9 +996,8 @@ end
 local AutoHopperModule = {}
 AutoHopperModule.Enabled = false
 AutoHopperModule.Connection = nil
-AutoHopperModule.IdleTime = 60 -- 1 phút
-AutoHopperModule.AutoHop = true -- Tự động hop khi idle
-AutoHopperModule.LastHopTime = 0
+AutoHopperModule.IdleTime = 60
+AutoHopperModule.AutoHop = true
 
 local function getEmptyServers()
     local servers = {}
@@ -876,19 +1049,17 @@ local function hopServer()
     local servers = getEmptyServers()
     
     if #servers == 0 then
-        print("⚠️  Không tìm thấy server trống, thử lại sau...")
+        print("⚠️  Không tìm thấy server trống")
         return false
     end
     
     local randomServer = servers[math.random(1, #servers)]
     print("🌍 Hop sang server: " .. randomServer)
-    print("⏱️  Idle time: " .. AutoHopperModule.IdleTime .. "s")
     
     pcall(function()
         TeleportService:TeleportToPlaceInstance(placeId, randomServer, plr)
     end)
     
-    AutoHopperModule.LastHopTime = tick()
     return true
 end
 
@@ -913,7 +1084,6 @@ function AutoHopperModule.Start()
     
     local lastPosition = humanoidRootPart.Position
     local idleStartTime = tick()
-    local logInterval = 0
     
     if AutoHopperModule.Connection then
         AutoHopperModule.Connection:Disconnect()
@@ -930,22 +1100,13 @@ function AutoHopperModule.Start()
         local currentPosition = humanoidRootPart.Position
         local distanceMoved = (currentPosition - lastPosition).Magnitude
         
-        -- Nếu di chuyển đủ xa, reset timer
         if distanceMoved > 0.5 then
             lastPosition = currentPosition
             idleStartTime = tick()
-            logInterval = 0
         end
         
         local elapsedIdle = tick() - idleStartTime
         
-        -- Log mỗi 10 giây
-        logInterval = logInterval + 1
-        if logInterval % 600 == 0 then -- Heartbeat ~60fps, 600 frames = 10s
-            print(string.format("⏱️  Idle: %ds / %ds", math.floor(elapsedIdle), AutoHopperModule.IdleTime))
-        end
-        
-        -- Tự động hop nếu đứng im đủ lâu
         if AutoHopperModule.AutoHop and elapsedIdle >= AutoHopperModule.IdleTime then
             hopServer()
             idleStartTime = tick()
@@ -962,56 +1123,42 @@ function AutoHopperModule.Stop()
     print("❌ Auto Hopper dừng")
 end
 
--- ===================== BUTTON CONNECTIONS =====================
-fastAttackBtn.MouseButton1Click:Connect(function()
-    FastAttackModule.Enabled = not FastAttackModule.Enabled
-    if FastAttackModule.Enabled then
-        fastAttackBtn.TextColor3 = COL_GREEN
-        fastAttackBtn.Text = "✓ FAST ATTACK ACTIVE"
-    else
-        fastAttackBtn.TextColor3 = COL_RED
-        fastAttackBtn.Text = "🚀 FAST ATTACK"
-    end
-end)
-
-bringEnemyBtn.MouseButton1Click:Connect(function()
-    if BringEnemyModule.Enabled then
-        BringEnemyModule.Stop()
-        bringEnemyBtn.TextColor3 = COL_RED
-        bringEnemyBtn.Text = "🎯 BRING ENEMY"
-    else
-        BringEnemyModule.Start()
-        bringEnemyBtn.TextColor3 = COL_GREEN
-        bringEnemyBtn.Text = "✓ BRING ENEMY ACTIVE"
-    end
-end)
-
-autoHopperBtn.MouseButton1Click:Connect(function()
-    if AutoHopperModule.Enabled then
-        AutoHopperModule.Stop()
-        autoHopperBtn.TextColor3 = COL_RED
-        autoHopperBtn.Text = "🌍 AUTO HOPPER"
-    else
-        AutoHopperModule.Start()
-        autoHopperBtn.TextColor3 = COL_GREEN
-        autoHopperBtn.Text = "✓ AUTO HOPPER ACTIVE"
-    end
-end)
-
 -- ===================== MAIN ATTACK LOOP =====================
 task.spawn(function()
     while true do
         if FastAttackModule.Enabled then
             FastAttackModule.ExecuteFastAttack()
         end
-        task.wait(FastAttackModule.Rate)
+        task.wait(0.1)
     end
 end)
 
+-- ===================== AUTO START ALL FEATURES =====================
+task.spawn(function()
+    task.wait(3)
+    
+    print("🚀 Tự động khởi chạy tất cả tính năng...")
+    
+    -- Bật Fast Attack
+    FastAttackModule.Enabled = true
+    print("✅ Fast Attack: ON")
+    
+    -- Bật Bring Enemy
+    BringEnemyModule.Start()
+    print("✅ Bring Enemy: ON")
+    
+    -- Bật Auto Hopper
+    AutoHopperModule.Start()
+    print("✅ Auto Hopper: ON")
+    
+    print("🎯 Tất cả tính năng đã bật!")
+end)
+
 print("✓ Ryzen Config v3.2 loaded successfully!")
-print("✓ Features: UI Dashboard | Fast Attack | Bring Enemy | Auto Hopper")
+print("✓ Features: Dashboard | Fast Attack | Bring Enemy | Auto Hopper | Time Game")
 print("✓ Hotkey: Right Control to toggle UI")
 print("✓ Auto Hopper: Tự động hop server nếu đứng im > 60 giây")
+print("✓ Tất cả tính năng sẽ TỰ ĐỘNG BẬT sau 3 giây!")
 
 -- ===================== LOAD BANANA CAT SCRIPT =====================
 task.spawn(function()
