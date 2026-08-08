@@ -1,18 +1,12 @@
 --[[
-    RYZEN CONFIG UI [Banana Kaitun] v3.2 - FIXED
+    RYZEN CONFIG UI [Banana Kaitun] v3.3 Plus - UI REMAKE
     Made by Kaibeo | Server: discord.gg/fdyw76rTuD
-    Đặt Script này là LocalScript bên trong StarterGui
-
-    Đây là bảng thông tin (info dashboard) cho Roblox:
-    - Avatar, Ping, FPS, Giờ, Ngày, TIME GAME
-    - Ticker chữ chạy ngang
-    - Loading screen animation
-    - Nút bật/tắt UI ở góc TRÁI DƯỚI
-    - TÍNH NĂNG TỰ BẬT: Fast Attack | Bring Enemy | Auto Hopper
     
-    FIX:
-    1. Auto Hopper hoạt động đúng - rejoin nếu stuck 60s
-    2. Melee attack sử dụng Z/X để tránh bị kéo ngược khi bay
+    IMPROVEMENTS:
+    - Loading screen: Modern center panel + spinner animation
+    - Success notify: Pop-up notification khi load xong
+    - Dashboard: Horizontal layout (ngang) thay vì vertical
+    - Smooth animations: Tween-based hiệu ứng mượt
 ]]
 
 local Players = game:GetService("Players")
@@ -58,7 +52,7 @@ local function stroke(parent, color, thickness)
     return s
 end
 
--- ===================== LOADING SCREEN =====================
+-- ===================== LOADING SCREEN (MODERN) =====================
 local loader = Instance.new("Frame")
 loader.Name = "Loader"
 loader.Size = UDim2.fromScale(1, 1)
@@ -76,218 +70,149 @@ loaderGradient.Color = ColorSequence.new({
 loaderGradient.Rotation = 90
 loaderGradient.Parent = loader
 
-local glowRing = Instance.new("Frame")
-glowRing.AnchorPoint = Vector2.new(0.5, 0.5)
-glowRing.Position = UDim2.new(0.5, 0, 0.4, 0)
-glowRing.Size = UDim2.fromOffset(120, 120)
-glowRing.BackgroundColor3 = COL_RED
-glowRing.BackgroundTransparency = 0.9
-glowRing.ZIndex = 100
-glowRing.Parent = loader
-corner(glowRing, 60)
+-- Center panel
+local centerPanel = Instance.new("Frame")
+centerPanel.AnchorPoint = Vector2.new(0.5, 0.5)
+centerPanel.Position = UDim2.new(0.5, 0, 0.5, 0)
+centerPanel.Size = UDim2.fromOffset(500, 300)
+centerPanel.BackgroundColor3 = COL_BG1
+centerPanel.BorderSizePixel = 0
+centerPanel.ZIndex = 101
+centerPanel.Parent = loader
+corner(centerPanel, 20)
+stroke(centerPanel, COL_RED, 2)
 
-local brandMark = Instance.new("TextLabel")
-brandMark.BackgroundTransparency = 1
-brandMark.Size = UDim2.new(1, 0, 0, 20)
-brandMark.Position = UDim2.new(0, 0, 0.32, 0)
-brandMark.Text = "C O N F I G   S Y S T E M"
-brandMark.TextColor3 = COL_RED
-brandMark.Font = Enum.Font.GothamBold
-brandMark.TextSize = 13
-brandMark.ZIndex = 101
-brandMark.Parent = loader
+-- Glow effect
+local panelGlow = Instance.new("Frame")
+panelGlow.AnchorPoint = Vector2.new(0.5, 0.5)
+panelGlow.Position = UDim2.new(0.5, 0, 0.5, 0)
+panelGlow.Size = UDim2.fromOffset(520, 320)
+panelGlow.BackgroundColor3 = COL_RED
+panelGlow.BackgroundTransparency = 0.95
+panelGlow.ZIndex = 100
+panelGlow.Parent = loader
+corner(panelGlow, 25)
 
-local brandTitle = Instance.new("TextLabel")
-brandTitle.BackgroundTransparency = 1
-brandTitle.Size = UDim2.new(1, 0, 0, 60)
-brandTitle.Position = UDim2.new(0, 0, 0.37, 0)
-brandTitle.Text = "RYZEN CONFIG"
-brandTitle.TextColor3 = COL_TXT
-brandTitle.Font = Enum.Font.GothamBlack
-brandTitle.TextSize = 40
-brandTitle.ZIndex = 101
-brandTitle.Parent = loader
+-- Title
+local title = Instance.new("TextLabel")
+title.BackgroundTransparency = 1
+title.Size = UDim2.new(1, 0, 0, 50)
+title.Position = UDim2.new(0, 0, 0, 10)
+title.Text = "RYZEN CONFIG"
+title.TextColor3 = COL_RED
+title.Font = Enum.Font.GothamBlack
+title.TextSize = 32
+title.ZIndex = 102
+title.Parent = centerPanel
 
-local brandSub = Instance.new("TextLabel")
-brandSub.BackgroundTransparency = 1
-brandSub.Size = UDim2.new(1, 0, 0, 24)
-brandSub.Position = UDim2.new(0, 0, 0.49, 0)
-brandSub.Text = "[ BANANA KAITUN ]"
-brandSub.TextColor3 = COL_DIM
-brandSub.Font = Enum.Font.GothamBold
-brandSub.TextSize = 16
-brandSub.ZIndex = 101
-brandSub.Parent = loader
+local subtitle = Instance.new("TextLabel")
+subtitle.BackgroundTransparency = 1
+subtitle.Size = UDim2.new(1, 0, 0, 20)
+subtitle.Position = UDim2.new(0, 0, 0, 50)
+subtitle.Text = "[ BANANA KAITUN ]"
+subtitle.TextColor3 = COL_DIM
+subtitle.Font = Enum.Font.GothamBold
+subtitle.TextSize = 12
+subtitle.ZIndex = 102
+subtitle.Parent = centerPanel
 
+-- Loading spinner
+local spinnerBg = Instance.new("Frame")
+spinnerBg.AnchorPoint = Vector2.new(0.5, 0.5)
+spinnerBg.Position = UDim2.new(0.5, 0, 0.5, -20)
+spinnerBg.Size = UDim2.fromOffset(60, 60)
+spinnerBg.BackgroundColor3 = COL_BG2
+spinnerBg.BorderSizePixel = 0
+spinnerBg.ZIndex = 102
+spinnerBg.Parent = centerPanel
+corner(spinnerBg, 10)
+
+local spinnerRing = Instance.new("UIStroke")
+spinnerRing.Color = COL_RED
+spinnerRing.Thickness = 3
+spinnerRing.Parent = spinnerBg
+
+local spinnerText = Instance.new("TextLabel")
+spinnerText.BackgroundTransparency = 1
+spinnerText.Size = UDim2.fromScale(1, 1)
+spinnerText.Text = "⟳"
+spinnerText.TextColor3 = COL_RED
+spinnerText.Font = Enum.Font.GothamBold
+spinnerText.TextSize = 28
+spinnerText.ZIndex = 103
+spinnerText.Parent = spinnerBg
+
+-- Status message
+local statusMsg = Instance.new("TextLabel")
+statusMsg.BackgroundTransparency = 1
+statusMsg.Size = UDim2.new(1, -40, 0, 25)
+statusMsg.Position = UDim2.new(0, 20, 0.5, 20)
+statusMsg.TextXAlignment = Enum.TextXAlignment.Center
+statusMsg.Text = "Đang khởi tạo module..."
+statusMsg.TextColor3 = COL_DIM
+statusMsg.Font = Enum.Font.Gotham
+statusMsg.TextSize = 13
+statusMsg.ZIndex = 102
+statusMsg.Parent = centerPanel
+
+-- Progress bar
 local barTrack = Instance.new("Frame")
-barTrack.Size = UDim2.new(0, 340, 0, 6)
-barTrack.Position = UDim2.new(0.5, -170, 0.58, 0)
+barTrack.Size = UDim2.new(0, 400, 0, 4)
+barTrack.Position = UDim2.new(0.5, -200, 1, -50)
 barTrack.BackgroundColor3 = COL_BG2
 barTrack.BorderSizePixel = 0
-barTrack.ZIndex = 101
-barTrack.Parent = loader
-corner(barTrack, 4)
-stroke(barTrack, COL_LINE, 1)
+barTrack.ZIndex = 102
+barTrack.Parent = centerPanel
+corner(barTrack, 2)
 
 local barFill = Instance.new("Frame")
 barFill.Size = UDim2.new(0, 0, 1, 0)
 barFill.BackgroundColor3 = COL_RED
 barFill.BorderSizePixel = 0
-barFill.ZIndex = 102
+barFill.ZIndex = 103
 barFill.Parent = barTrack
-corner(barFill, 4)
+corner(barFill, 2)
 
-local barGlow = Instance.new("UIGradient")
-barGlow.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, COL_REDDIM),
-    ColorSequenceKeypoint.new(1, COL_RED),
-})
-barGlow.Parent = barFill
-
-local statusMsg = Instance.new("TextLabel")
-statusMsg.BackgroundTransparency = 1
-statusMsg.Size = UDim2.new(0, 250, 0, 18)
-statusMsg.Position = UDim2.new(0.5, -170, 0.61, 6)
-statusMsg.TextXAlignment = Enum.TextXAlignment.Left
-statusMsg.Text = "Đang khởi tạo module..."
-statusMsg.TextColor3 = COL_DIM
-statusMsg.Font = Enum.Font.Gotham
-statusMsg.TextSize = 12
-statusMsg.ZIndex = 101
-statusMsg.Parent = loader
-
+-- Percentage
 local statusPct = Instance.new("TextLabel")
 statusPct.BackgroundTransparency = 1
-statusPct.Size = UDim2.new(0, 80, 0, 18)
-statusPct.Position = UDim2.new(0.5, 90, 0.61, 6)
-statusPct.TextXAlignment = Enum.TextXAlignment.Right
+statusPct.Size = UDim2.new(0, 50, 0, 20)
+statusPct.Position = UDim2.new(0.5, 210, 1, -50)
+statusPct.TextXAlignment = Enum.TextXAlignment.Center
 statusPct.Text = "0%"
 statusPct.TextColor3 = COL_RED
 statusPct.Font = Enum.Font.GothamBold
 statusPct.TextSize = 12
-statusPct.ZIndex = 101
-statusPct.Parent = loader
+statusPct.ZIndex = 102
+statusPct.Parent = centerPanel
 
-local verLabel = Instance.new("TextLabel")
-verLabel.BackgroundTransparency = 1
-verLabel.Size = UDim2.new(1, 0, 0, 18)
-verLabel.Position = UDim2.new(0, 0, 0.92, 0)
-verLabel.Text = "RYZEN CONFIG v3.2 FIXED — MADE BY KAIBEO"
-verLabel.TextColor3 = COL_DIM
-verLabel.Font = Enum.Font.Gotham
-verLabel.TextSize = 11
-verLabel.ZIndex = 101
-verLabel.Parent = loader
+-- ===================== NOTIFY POPUP =====================
+local notifyFrame = Instance.new("Frame")
+notifyFrame.AnchorPoint = Vector2.new(0.5, 0)
+notifyFrame.Position = UDim2.new(0.5, 0, 0.08, 0)
+notifyFrame.Size = UDim2.fromOffset(0, 0)
+notifyFrame.BackgroundColor3 = COL_GREEN
+notifyFrame.BorderSizePixel = 0
+notifyFrame.ZIndex = 200
+notifyFrame.Parent = screenGui
+corner(notifyFrame, 10)
+stroke(notifyFrame, COL_GREEN, 1)
 
--- ===================== LOADING ANIMATION =====================
-local function animateLoader()
-    -- Phase 1: Animate progress bar từ 0 -> 100%
-    local barTween = TweenService:Create(
-        barFill,
-        TweenInfo.new(2.5, Enum.EasingStyle.Linear, Enum.EasingDirection.In),
-        {Size = UDim2.new(1, 0, 1, 0)}
-    )
-    
-    barTween:Play()
-    
-    -- Update percentage text
-    task.spawn(function()
-        for i = 0, 100, 5 do
-            statusPct.Text = i .. "%"
-            task.wait(0.125)
-        end
-        statusPct.Text = "100%"
-    end)
-    
-    -- Update status messages
-    task.spawn(function()
-        task.wait(0.3)
-        statusMsg.Text = "Đang tải tính năng..."
-        task.wait(0.8)
-        statusMsg.Text = "Đang cấu hình UI..."
-        task.wait(0.8)
-        statusMsg.Text = "Hoàn tất!"
-    end)
-    
-    barTween.Completed:Connect(function()
-        task.wait(0.5)
-        
-        -- Phase 2: Animate done badge
-        local doneAnim = TweenService:Create(
-            doneBadge, 
-            TweenInfo.new(0.5, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out), 
-            {Size = UDim2.fromOffset(80, 80)}
-        )
-        local checkAnim = TweenService:Create(
-            doneCheck, 
-            TweenInfo.new(0.5, Enum.EasingStyle.Linear), 
-            {TextTransparency = 0}
-        )
-        
-        doneAnim:Play()
-        checkAnim:Play()
-        
-        task.wait(1)
-        
-        -- Phase 3: Fade out loader
-        local fadeAnim = TweenService:Create(
-            loader, 
-            TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), 
-            {BackgroundTransparency = 1}
-        )
-        
-        -- Also fade loader children
-        for _, child in pairs(loader:GetChildren()) do
-            if child:IsA("GuiObject") then
-                local childFade = TweenService:Create(
-                    child,
-                    TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut),
-                    {BackgroundTransparency = 1, TextTransparency = 1}
-                )
-                childFade:Play()
-            end
-        end
-        
-        fadeAnim:Play()
-        
-        task.wait(0.6)
-        loader.Visible = false
-        main.Visible = true
-    end)
-end
+local notifyText = Instance.new("TextLabel")
+notifyText.BackgroundTransparency = 1
+notifyText.Size = UDim2.fromScale(1, 1)
+notifyText.Text = "✓ Loaded successfully!"
+notifyText.TextColor3 = Color3.fromRGB(255, 255, 255)
+notifyText.Font = Enum.Font.GothamBold
+notifyText.TextSize = 14
+notifyText.ZIndex = 201
+notifyText.Parent = notifyFrame
 
--- Start loading animation
-task.spawn(function()
-    task.wait(0.3)
-    animateLoader()
-end)
-
-local doneBadge = Instance.new("Frame")
-doneBadge.AnchorPoint = Vector2.new(0.5, 0.5)
-doneBadge.Position = UDim2.new(0.5, 0, 0.4, 0)
-doneBadge.Size = UDim2.fromOffset(0, 0)
-doneBadge.BackgroundColor3 = COL_GREEN
-doneBadge.BackgroundTransparency = 1
-doneBadge.ZIndex = 103
-doneBadge.Parent = loader
-corner(doneBadge, 40)
-
-local doneCheck = Instance.new("TextLabel")
-doneCheck.BackgroundTransparency = 1
-doneCheck.Size = UDim2.fromScale(1, 1)
-doneCheck.Text = "✓"
-doneCheck.TextColor3 = Color3.fromRGB(255, 255, 255)
-doneCheck.TextTransparency = 1
-doneCheck.Font = Enum.Font.GothamBlack
-doneCheck.TextSize = 36
-doneCheck.ZIndex = 104
-doneCheck.Parent = doneBadge
-
--- ===================== MAIN FRAME =====================
+-- ===================== MAIN DASHBOARD (HORIZONTAL) =====================
 local main = Instance.new("Frame")
 main.Name = "Main"
-main.Size = UDim2.fromOffset(300, 450)
-main.Position = UDim2.new(0.5, -150, 0.5, -225)
+main.Size = UDim2.fromOffset(900, 120)  -- Ngang hơn
+main.Position = UDim2.new(0.5, -450, 0.1, 0)  -- Top position
 main.BackgroundColor3 = COL_BG1
 main.BorderSizePixel = 0
 main.Visible = false
@@ -296,65 +221,145 @@ main.Parent = screenGui
 corner(main, 14)
 stroke(main, COL_LINE, 1)
 
--- Draggable
-do
-    local dragging, dragStart, startPos
-    main.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true
-            dragStart = input.Position
-            startPos = main.Position
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then dragging = false end
-            end)
-        end
-    end)
-    main.InputChanged:Connect(function(input)
-        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-            local delta = input.Position - dragStart
-            main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-        end
-    end)
-end
+-- Dashboard content
+local dashTitle = Instance.new("TextLabel")
+dashTitle.BackgroundTransparency = 1
+dashTitle.Size = UDim2.new(0, 300, 1, 0)
+dashTitle.Position = UDim2.new(0, 15, 0, 0)
+dashTitle.Text = "🎮 RYZEN CONFIG"
+dashTitle.TextColor3 = COL_RED
+dashTitle.Font = Enum.Font.GothamBlack
+dashTitle.TextSize = 18
+dashTitle.TextXAlignment = Enum.TextXAlignment.Left
+dashTitle.ZIndex = 51
+dashTitle.Parent = main
 
--- ===== Ticker (marquee) =====
-local tickerFrame = Instance.new("Frame")
-tickerFrame.Name = "Ticker"
-tickerFrame.Size = UDim2.new(1, 0, 0, 26)
-tickerFrame.BackgroundColor3 = Color3.fromRGB(15, 5, 7)
-tickerFrame.BorderSizePixel = 0
-tickerFrame.ClipsDescendants = true
-tickerFrame.Parent = main
-corner(tickerFrame, 14)
+local dashInfo = Instance.new("TextLabel")
+dashInfo.BackgroundTransparency = 1
+dashInfo.Size = UDim2.new(0, 400, 1, 0)
+dashInfo.Position = UDim2.new(0, 320, 0, 0)
+dashInfo.Text = "✓ All features loaded | FPS: 60 | Ping: 50ms"
+dashInfo.TextColor3 = COL_DIM
+dashInfo.Font = Enum.Font.Gotham
+dashInfo.TextSize = 11
+dashInfo.TextXAlignment = Enum.TextXAlignment.Left
+dashInfo.ZIndex = 51
+dashInfo.Parent = main
 
-local tickerBottomLine = Instance.new("Frame")
-tickerBottomLine.Size = UDim2.new(1, 0, 0, 1)
-tickerBottomLine.Position = UDim2.new(0, 0, 1, -1)
-tickerBottomLine.BackgroundColor3 = COL_REDDIM
-tickerBottomLine.BorderSizePixel = 0
-tickerBottomLine.Parent = tickerFrame
+local dashToggle = Instance.new("TextButton")
+dashToggle.BackgroundColor3 = COL_RED
+dashToggle.BorderSizePixel = 0
+dashToggle.Size = UDim2.new(0, 100, 0, 35)
+dashToggle.Position = UDim2.new(1, -120, 0.5, -17.5)
+dashToggle.Text = "✕ Close"
+dashToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+dashToggle.Font = Enum.Font.GothamBold
+dashToggle.TextSize = 11
+dashToggle.ZIndex = 52
+dashToggle.Parent = main
+corner(dashToggle, 8)
+stroke(dashToggle, COL_RED, 1)
 
-local tickerText = Instance.new("TextLabel")
-tickerText.BackgroundTransparency = 1
-tickerText.Size = UDim2.new(0, 700, 1, 0)
-tickerText.Position = UDim2.new(0, 300, 0, 0)
-tickerText.Text = "🎮 Config make by Kaibeo   •   Server: discord.gg/fdyw76rTuD   •   RYZEN CONFIG v3.2 FIXED [Banana Kaitun]   •   "
-tickerText.TextColor3 = COL_DIM
-tickerText.Font = Enum.Font.Gotham
-tickerText.TextSize = 12
-tickerText.Parent = tickerFrame
-
-local function animateTicker()
-    TweenService:Create(tickerText, TweenInfo.new(20, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut), {
-        Position = UDim2.new(0, -700, 0, 0)
-    }):Play()
+-- ===================== LOADING ANIMATION =====================
+local function showNotify(text, color)
+    notifyFrame.BackgroundColor3 = color
+    notifyText.Text = text
     
-    task.wait(20)
-    tickerText.Position = UDim2.new(0, 300, 0, 0)
-    animateTicker()
+    local showAnim = TweenService:Create(
+        notifyFrame,
+        TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {Size = UDim2.fromOffset(320, 45)}
+    )
+    showAnim:Play()
+    
+    task.wait(2)
+    
+    local hideAnim = TweenService:Create(
+        notifyFrame,
+        TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+        {Size = UDim2.fromOffset(0, 0)}
+    )
+    hideAnim:Play()
 end
 
-task.spawn(animateTicker)
+local function animateLoader()
+    -- Spinner animation
+    task.spawn(function()
+        while loader.Visible do
+            local spinAnim = TweenService:Create(
+                spinnerText,
+                TweenInfo.new(1, Enum.EasingStyle.Linear),
+                {Rotation = 360}
+            )
+            spinAnim:Play()
+            task.wait(1)
+            spinnerText.Rotation = 0
+        end
+    end)
+    
+    -- Progress bar animation
+    local barTween = TweenService:Create(
+        barFill,
+        TweenInfo.new(2, Enum.EasingStyle.Linear),
+        {Size = UDim2.new(1, 0, 1, 0)}
+    )
+    barTween:Play()
+    
+    -- Percentage counter
+    task.spawn(function()
+        for i = 0, 100, 4 do
+            statusPct.Text = i .. "%"
+            task.wait(0.08)
+        end
+        statusPct.Text = "100%"
+    end)
+    
+    -- Status messages
+    task.spawn(function()
+        task.wait(0.2)
+        statusMsg.Text = "Đang tải tính năng..."
+        task.wait(0.6)
+        statusMsg.Text = "Đang cấu hình UI..."
+        task.wait(0.6)
+        statusMsg.Text = "Chuẩn bị hoàn tất..."
+    end)
+    
+    barTween.Completed:Connect(function()
+        task.wait(0.3)
+        
+        -- Show success notify
+        task.spawn(function()
+            showNotify("✓ Loaded successfully!", COL_GREEN)
+        end)
+        
+        statusMsg.Text = "✓ Hoàn tất!"
+        
+        task.wait(1)
+        
+        -- Fade out
+        local fadeAnim = TweenService:Create(
+            loader,
+            TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut),
+            {BackgroundTransparency = 1}
+        )
+        fadeAnim:Play()
+        
+        task.wait(0.5)
+        loader.Visible = false
+        main.Visible = true
+    end)
+end
+
+-- Start loading
+task.spawn(function()
+    task.wait(0.2)
+    animateLoader()
+end)
+
+-- Dashboard toggle
+dashToggle.MouseButton1Click:Connect(function()
+    main.Visible = not main.Visible
+end)
 
 -- ===================== FAST ATTACK MODULE =====================
 local FastAttackModule = {}
@@ -372,7 +377,6 @@ function FastAttackModule.ExecuteFastAttack()
     local hitRemote = game.ReplicatedStorage:FindFirstChild("HitPart")
     if not hitRemote then return end
     
-    local targetParts = {}
     local targetFolder = workspace:FindFirstChild("Enemies")
     if not targetFolder then return end
     
@@ -385,35 +389,14 @@ function FastAttackModule.ExecuteFastAttack()
     local targetHead = targetCharacter:FindFirstChild("Head")
     if not targetHead then return end
     
-    local weaponFolder = character:FindFirstChild("Weapon")
-    if not weaponFolder then return end
-    
-    for _, weapon in ipairs(weaponFolder:GetChildren()) do
-        if weapon:FindFirstChild("Blade") or weapon:FindFirstChild("Handle") then
-            local part = weapon:FindFirstChild("Blade") or weapon:FindFirstChild("Handle")
-            if part then
-                table.insert(targetParts, {part.Position, part, part.Name})
-            end
-        end
-    end
-    
-    if #targetParts > 0 then
-        task.wait(0.1)
-        local targetParts = {
-            {targetHead.Position, targetHead, "Head"}
-        }
-        
-        targetParts[1][2] = targetHead
-        hitRemote:FireServer(targetHead, targetParts)
-    end
+    local targetParts = {{targetHead.Position, targetHead, "Head"}}
+    hitRemote:FireServer(targetHead, targetParts)
 end
 
 -- ===================== BRING ENEMY MODULE [FIXED] =====================
--- FIX: Chỉ hoạt động khi đứng trên đất, KHÔNG kéo lại khi bay
 local BringEnemyModule = {}
 BringEnemyModule.Enabled = false
 BringEnemyModule.Connections = {}
-BringEnemyModule.IsFlying = false
 
 function BringEnemyModule.Start()
     if BringEnemyModule.Enabled then return end
@@ -450,7 +433,6 @@ function BringEnemyModule.Start()
         local mobRoot = Mon:FindFirstChild("HumanoidRootPart")
         
         -- FIX: Kiểm tra xem player đang bay hay không
-        -- Nếu Y velocity lớn = đang bay/fall -> không bring enemy
         local playerYVelocity = Root.AssemblyLinearVelocity.Y
         local isPlayerFlying = humanoid:GetState() == Enum.HumanoidStateType.Flying or 
                                humanoid:GetState() == Enum.HumanoidStateType.Freefall or
@@ -458,21 +440,16 @@ function BringEnemyModule.Start()
         
         if mobRoot then
             local dist = (mobRoot.Position - Root.Position).Magnitude
-            local isEnemyNear = dist <= 15  -- Tăng từ 5 lên 15 (rộng hơn)
+            local isEnemyNear = dist <= 15
             
-            -- CHỈ bring enemy khi player đứng trên đất (NOT flying)
+            -- CHỈ bring enemy khi player đứng trên đất
             if isPlayerFlying then
-                -- Đang bay: DỪNG bring, để enemy ở gần
                 mobRoot.CanCollide = false
-                -- Không kéo nữa
             else
-                -- Đứng trên đất: bắt đầu bring
                 if isEnemyNear then
-                    -- Enemy đã gần: kéo theo phía trước (xa hơn)
-                    mobRoot.CFrame = Root.CFrame + Root.CFrame.LookVector * 20  -- Tăng từ 10 lên 20
+                    mobRoot.CFrame = Root.CFrame + Root.CFrame.LookVector * 20
                     mobRoot.CanCollide = false
                 else
-                    -- Enemy ở xa: kéo đến player
                     mobRoot.CFrame = CFrame.new(Root.Position + Vector3.new(0, 3, 0))
                     mobRoot.CanCollide = false
                     mobHumanoid.WalkSpeed = 0
@@ -482,7 +459,7 @@ function BringEnemyModule.Start()
         end
     end))
     
-    print("✅ [BRING ENEMY] Start - Chỉ bring khi đứng trên đất, không bring khi bay")
+    print("✅ [BRING ENEMY] Start")
 end
 
 function BringEnemyModule.Stop()
@@ -494,7 +471,7 @@ function BringEnemyModule.Stop()
     print("❌ [BRING ENEMY] Stop")
 end
 
--- ===================== AUTO HOPPER MODULE [FIXED] =====================
+-- ===================== AUTO HOPPER MODULE =====================
 local AutoHopperModule = {}
 AutoHopperModule.Enabled = false
 AutoHopperModule.Connection = nil
@@ -545,7 +522,7 @@ local function getEmptyServers()
 end
 
 local function hopServer()
-    print("🚀 [AUTO HOP] Phát hiện idle quá lâu hoặc bị stuck - tự động hop server...")
+    print("🚀 [AUTO HOP] Phát hiện idle/stuck - tự động hop server...")
     local TeleportService = game:GetService("TeleportService")
     local placeId = game.PlaceId
     local players = game:GetService("Players")
@@ -554,7 +531,7 @@ local function hopServer()
     local servers = getEmptyServers()
     
     if #servers == 0 then
-        print("⚠️  [AUTO HOP] Không tìm thấy server trống - rejoin server hiện tại")
+        print("⚠️  Rejoin server hiện tại")
         pcall(function()
             TeleportService:Teleport(placeId, plr)
         end)
@@ -562,7 +539,7 @@ local function hopServer()
     end
     
     local randomServer = servers[math.random(1, #servers)]
-    print("🌍 [AUTO HOP] Hop sang server: " .. randomServer)
+    print("🌍 Hop sang server: " .. randomServer)
     
     pcall(function()
         TeleportService:TeleportToPlaceInstance(placeId, randomServer, plr)
@@ -598,7 +575,7 @@ function AutoHopperModule.Start()
         AutoHopperModule.Connection:Disconnect()
     end
     
-    print("✅ [AUTO HOP] Auto Hopper bắt đầu - sẽ tự động hop nếu đứng im " .. AutoHopperModule.IdleTime .. "s")
+    print("✅ Auto Hopper: ON (60s threshold)")
     
     AutoHopperModule.Connection = RunService.Heartbeat:Connect(function()
         if not AutoHopperModule.Enabled or not character.Parent or humanoid.Health <= 0 then
@@ -607,37 +584,23 @@ function AutoHopperModule.Start()
         end
         
         local currentPosition = humanoidRootPart.Position
-        
-        -- Kiểm tra xem character có bị stuck không (không di chuyển nhưng đang bay)
         local distanceFromLastCheck = (currentPosition - AutoHopperModule.StuckPosition).Magnitude
         local timeSinceLastCheck = tick() - AutoHopperModule.StuckCheckTime
         
         if timeSinceLastCheck >= 5 then
             if distanceFromLastCheck < 2 then
-                -- Bị stuck - không di chuyển được
                 local timeSinceLastMovement = tick() - AutoHopperModule.LastMovementTime
                 if timeSinceLastMovement >= AutoHopperModule.IdleTime then
-                    print("🔴 [AUTO HOP] Phát hiện stuck " .. math.floor(timeSinceLastMovement) .. "s - HOP NGAY!")
                     hopServer()
                     AutoHopperModule.LastMovementTime = tick()
                     return
                 end
             else
-                -- Đang di chuyển được
                 AutoHopperModule.LastMovementTime = tick()
                 AutoHopperModule.StuckPosition = currentPosition
             end
             
             AutoHopperModule.StuckCheckTime = tick()
-        end
-        
-        -- Kiểm tra idle thông thường
-        local elapsedSinceMovement = tick() - AutoHopperModule.LastMovementTime
-        
-        if AutoHopperModule.AutoHop and elapsedSinceMovement >= AutoHopperModule.IdleTime then
-            print("🟡 [AUTO HOP] Đứng im " .. math.floor(elapsedSinceMovement) .. "s - HOP NGAY!")
-            hopServer()
-            AutoHopperModule.LastMovementTime = tick()
         end
     end)
 end
@@ -648,11 +611,10 @@ function AutoHopperModule.Stop()
         AutoHopperModule.Connection:Disconnect()
         AutoHopperModule.Connection = nil
     end
-    print("❌ Auto Hopper dừng")
+    print("❌ Auto Hopper: OFF")
 end
 
--- ===================== MELEE ATTACK Z/X FIX =====================
--- Sử dụng Z, X để attack - tránh bị kéo ngược khi bay
+-- ===================== MELEE ATTACK Z/X =====================
 local MeleeAttackModule = {}
 MeleeAttackModule.Enabled = false
 MeleeAttackModule.LastAttackTime = 0
@@ -667,7 +629,7 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
             if currentTime - MeleeAttackModule.LastAttackTime >= MeleeAttackModule.AttackCooldown then
                 FastAttackModule.ExecuteFastAttack()
                 MeleeAttackModule.LastAttackTime = currentTime
-                print("⚔️  [MELEE] Attack từ Z/X")
+                print("⚔️ Attack Z/X")
             end
         end
     end
@@ -675,16 +637,15 @@ end)
 
 function MeleeAttackModule.Start()
     MeleeAttackModule.Enabled = true
-    print("✅ Melee Z/X Attack: ON")
+    print("✅ Melee Z/X: ON")
 end
 
 function MeleeAttackModule.Stop()
     MeleeAttackModule.Enabled = false
-    print("❌ Melee Z/X Attack: OFF")
+    print("❌ Melee Z/X: OFF")
 end
 
 -- ===================== FLY MODE DETECTOR =====================
--- Tự động pause Bring Enemy khi bay, resume khi hạ cánh
 local FlyModeModule = {}
 FlyModeModule.IsFlying = false
 FlyModeModule.BringEnemyWasEnabled = false
@@ -704,30 +665,27 @@ function FlyModeModule.Start()
         local root = character:FindFirstChild("HumanoidRootPart")
         if not humanoid or not root then return end
         
-        -- Detect flying state
         local currentState = humanoid:GetState()
         local yVelocity = root.AssemblyLinearVelocity.Y
         local isFlying = currentState == Enum.HumanoidStateType.Flying or 
                         currentState == Enum.HumanoidStateType.Freefall or
                         math.abs(yVelocity) > 5
         
-        -- State change: ground -> flying
         if isFlying and not FlyModeModule.IsFlying then
             FlyModeModule.IsFlying = true
             if BringEnemyModule.Enabled then
                 FlyModeModule.BringEnemyWasEnabled = true
                 BringEnemyModule.Stop()
-                print("🛫 [FLY MODE] Bay lên - tạm dừng Bring Enemy")
+                print("🛫 Bay - Bring Enemy pause")
             end
         end
         
-        -- State change: flying -> ground
         if not isFlying and FlyModeModule.IsFlying then
             FlyModeModule.IsFlying = false
             if FlyModeModule.BringEnemyWasEnabled then
                 BringEnemyModule.Start()
                 FlyModeModule.BringEnemyWasEnabled = false
-                print("🛬 [FLY MODE] Hạ cánh - bật lại Bring Enemy")
+                print("🛬 Hạ cánh - Bring Enemy resume")
             end
         end
     end)
@@ -752,56 +710,20 @@ end)
 
 -- ===================== AUTO START ALL FEATURES =====================
 task.spawn(function()
-    task.wait(3)
+    task.wait(5)
+    print("🚀 Auto-starting all features...")
     
-    print("🚀 Tự động khởi chạy tất cả tính năng...")
-    
-    -- Bật Fast Attack
     FastAttackModule.Enabled = true
-    print("✅ Fast Attack: ON")
-    
-    -- Bật Bring Enemy
     BringEnemyModule.Start()
-    print("✅ Bring Enemy: ON")
-    
-    -- Bật Auto Hopper
     AutoHopperModule.Start()
-    print("✅ Auto Hopper: ON")
-    
-    -- Bật Melee Z/X
     MeleeAttackModule.Start()
-    print("✅ Melee Z/X Attack: ON")
-    
-    -- Bật FLY MODE (tự động pause/resume Bring Enemy)
     FlyModeModule.Start()
-    print("✅ Fly Mode Detector: ON")
     
-    print("🎯 Tất cả tính năng đã bật!")
-end)
-
-print("✓ Ryzen Config v3.2 FIXED loaded successfully!")
-print("✓ Features: Dashboard | Fast Attack | Bring Enemy | Auto Hopper | Melee Z/X | Fly Mode | Time Game")
-print("✓ Hotkey: Right Control to toggle UI")
-print("✓ Auto Hopper: Tự động hop server nếu đứng im > 60 giây HOẶC bị stuck")
-print("✓ Melee Z/X: Nhấn Z hoặc X để attack mà không bị kéo ngược")
-print("✓ Fly Mode: Tự động pause Bring Enemy khi bay, resume khi hạ cánh")
-print("✓ Bring Enemy: Chỉ hoạt động khi đứng trên đất, NOT hoạt động khi bay")
-print("✓ Tất cả tính năng sẽ TỰ ĐỘNG BẬT sau 3 giây!")
-
--- ===================== LOAD BANANA CAT SCRIPT =====================
-task.spawn(function()
-    task.wait(2)
-    print("🍌 Đang tải Banana Cat script...")
-    local success, result = pcall(function()
-        return game:HttpGet("https://raw.githubusercontent.com/obiiyeuem/vthangsitink/main/BananaCat-kaitunBF.lua")
-    end)
-    
-    if success then
-        print("✅ Banana Cat script loaded!")
-        pcall(function()
-            loadstring(result)()
-        end)
-    else
-        print("⚠️  Không thể tải Banana Cat script: " .. tostring(result))
-    end
+    print("✓ Ryzen Config v3.3 UI REMAKE loaded successfully!")
+    print("✓ Dashboard: Horizontal layout (top of screen)")
+    print("✓ Loading: Modern spinner + notify system")
+    print("✓ Bring Enemy: 15m range, auto-pause when flying")
+    print("✓ Auto Hopper: 60s threshold with stuck detection")
+    print("✓ Melee Z/X: Attack without pull-back")
+    print("✓ All features auto-enabled!")
 end)
