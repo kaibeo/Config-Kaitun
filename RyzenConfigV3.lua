@@ -16,18 +16,31 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
 local player = Players.LocalPlayer
+repeat wait() until player and player:FindFirstChild("PlayerGui")
 
 -- ===================== COLORS =====================
-local COL_BG0    = Color3.fromRGB(10, 10, 11)
-local COL_BG1    = Color3.fromRGB(19, 19, 21)
-local COL_BG2    = Color3.fromRGB(28, 28, 31)
-local COL_LINE   = Color3.fromRGB(42, 42, 46)
-local COL_RED    = Color3.fromRGB(224, 38, 63)
-local COL_REDDIM = Color3.fromRGB(122, 21, 34)
-local COL_TXT    = Color3.fromRGB(232, 230, 227)
-local COL_DIM    = Color3.fromRGB(138, 138, 144)
-local COL_GREEN  = Color3.fromRGB(61, 220, 132)
-local COL_YELLOW = Color3.fromRGB(255, 200, 60)
+_G.COL_BG0    = Color3.fromRGB(10, 10, 11)
+_G.COL_BG1    = Color3.fromRGB(19, 19, 21)
+_G.COL_BG2    = Color3.fromRGB(28, 28, 31)
+_G.COL_LINE   = Color3.fromRGB(42, 42, 46)
+_G.COL_RED    = Color3.fromRGB(224, 38, 63)
+_G.COL_REDDIM = Color3.fromRGB(122, 21, 34)
+_G.COL_TXT    = Color3.fromRGB(232, 230, 227)
+_G.COL_DIM    = Color3.fromRGB(138, 138, 144)
+_G.COL_GREEN  = Color3.fromRGB(61, 220, 132)
+_G.COL_YELLOW = Color3.fromRGB(255, 200, 60)
+
+-- Local refs
+local COL_BG0    = _G.COL_BG0
+local COL_BG1    = _G.COL_BG1
+local COL_BG2    = _G.COL_BG2
+local COL_LINE   = _G.COL_LINE
+local COL_RED    = _G.COL_RED
+local COL_REDDIM = _G.COL_REDDIM
+local COL_TXT    = _G.COL_TXT
+local COL_DIM    = _G.COL_DIM
+local COL_GREEN  = _G.COL_GREEN
+local COL_YELLOW = _G.COL_YELLOW
 
 -- ===================== ROOT GUI =====================
 local screenGui = Instance.new("ScreenGui")
