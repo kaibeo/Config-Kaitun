@@ -181,55 +181,84 @@ verLabel.Parent = loader
 
 -- ===================== LOADING ANIMATION =====================
 local function animateLoader()
-    local steps = 20
-    for i = 0, steps do
-        local progress = i / steps
+    -- Phase 1: Animate progress bar từ 0 -> 100%
+    local barTween = TweenService:Create(
+        barFill,
+        TweenInfo.new(2.5, Enum.EasingStyle.Linear, Enum.EasingDirection.In),
+        {Size = UDim2.new(1, 0, 1, 0)}
+    )
+    
+    barTween:Play()
+    
+    -- Update percentage text
+    task.spawn(function()
+        for i = 0, 100, 5 do
+            statusPct.Text = i .. "%"
+            task.wait(0.125)
+        end
+        statusPct.Text = "100%"
+    end)
+    
+    -- Update status messages
+    task.spawn(function()
+        task.wait(0.3)
+        statusMsg.Text = "Đang tải tính năng..."
+        task.wait(0.8)
+        statusMsg.Text = "Đang cấu hình UI..."
+        task.wait(0.8)
+        statusMsg.Text = "Hoàn tất!"
+    end)
+    
+    barTween.Completed:Connect(function()
+        task.wait(0.5)
         
-        -- Update progress bar
-        barFill.Size = UDim2.new(progress, 0, 1, 0)
-        statusPct.Text = math.floor(progress * 100) .. "%"
+        -- Phase 2: Animate done badge
+        local doneAnim = TweenService:Create(
+            doneBadge, 
+            TweenInfo.new(0.5, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out), 
+            {Size = UDim2.fromOffset(80, 80)}
+        )
+        local checkAnim = TweenService:Create(
+            doneCheck, 
+            TweenInfo.new(0.5, Enum.EasingStyle.Linear), 
+            {TextTransparency = 0}
+        )
         
-        -- Animate messages
-        if i < 5 then
-            statusMsg.Text = "Đang khởi tạo module..."
-        elseif i < 10 then
-            statusMsg.Text = "Đang tải tính năng..."
-        elseif i < 15 then
-            statusMsg.Text = "Đang cấu hình UI..."
-        else
-            statusMsg.Text = "Hoàn tất!"
+        doneAnim:Play()
+        checkAnim:Play()
+        
+        task.wait(1)
+        
+        -- Phase 3: Fade out loader
+        local fadeAnim = TweenService:Create(
+            loader, 
+            TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), 
+            {BackgroundTransparency = 1}
+        )
+        
+        -- Also fade loader children
+        for _, child in pairs(loader:GetChildren()) do
+            if child:IsA("GuiObject") then
+                local childFade = TweenService:Create(
+                    child,
+                    TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut),
+                    {BackgroundTransparency = 1, TextTransparency = 1}
+                )
+                childFade:Play()
+            end
         end
         
-        task.wait(0.15)
-    end
-    
-    -- Animate done badge
-    local doneAnim = TweenService:Create(doneBadge, TweenInfo.new(0.5, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out), {
-        Size = UDim2.fromOffset(80, 80)
-    })
-    local checkAnim = TweenService:Create(doneCheck, TweenInfo.new(0.5, Enum.EasingStyle.Linear), {
-        TextTransparency = 0
-    })
-    
-    doneAnim:Play()
-    checkAnim:Play()
-    
-    task.wait(1.5)
-    
-    -- Fade out loader
-    local fadeAnim = TweenService:Create(loader, TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), {
-        BackgroundTransparency = 1
-    })
-    fadeAnim:Play()
-    
-    task.wait(0.8)
-    loader.Visible = false
-    main.Visible = true
+        fadeAnim:Play()
+        
+        task.wait(0.6)
+        loader.Visible = false
+        main.Visible = true
+    end)
 end
 
 -- Start loading animation
 task.spawn(function()
-    task.wait(0.5)
+    task.wait(0.3)
     animateLoader()
 end)
 
