@@ -179,6 +179,60 @@ verLabel.TextSize = 11
 verLabel.ZIndex = 101
 verLabel.Parent = loader
 
+-- ===================== LOADING ANIMATION =====================
+local function animateLoader()
+    local steps = 20
+    for i = 0, steps do
+        local progress = i / steps
+        
+        -- Update progress bar
+        barFill.Size = UDim2.new(progress, 0, 1, 0)
+        statusPct.Text = math.floor(progress * 100) .. "%"
+        
+        -- Animate messages
+        if i < 5 then
+            statusMsg.Text = "Đang khởi tạo module..."
+        elseif i < 10 then
+            statusMsg.Text = "Đang tải tính năng..."
+        elseif i < 15 then
+            statusMsg.Text = "Đang cấu hình UI..."
+        else
+            statusMsg.Text = "Hoàn tất!"
+        end
+        
+        task.wait(0.15)
+    end
+    
+    -- Animate done badge
+    local doneAnim = TweenService:Create(doneBadge, TweenInfo.new(0.5, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out), {
+        Size = UDim2.fromOffset(80, 80)
+    })
+    local checkAnim = TweenService:Create(doneCheck, TweenInfo.new(0.5, Enum.EasingStyle.Linear), {
+        TextTransparency = 0
+    })
+    
+    doneAnim:Play()
+    checkAnim:Play()
+    
+    task.wait(1.5)
+    
+    -- Fade out loader
+    local fadeAnim = TweenService:Create(loader, TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), {
+        BackgroundTransparency = 1
+    })
+    fadeAnim:Play()
+    
+    task.wait(0.8)
+    loader.Visible = false
+    main.Visible = true
+end
+
+-- Start loading animation
+task.spawn(function()
+    task.wait(0.5)
+    animateLoader()
+end)
+
 local doneBadge = Instance.new("Frame")
 doneBadge.AnchorPoint = Vector2.new(0.5, 0.5)
 doneBadge.Position = UDim2.new(0.5, 0, 0.4, 0)
