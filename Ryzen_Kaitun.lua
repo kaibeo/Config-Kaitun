@@ -1,4 +1,3 @@
-
 loadstring(game:HttpGet("https://raw.githubusercontent.com/kaibeo/Source-test/refs/heads/main/Ryzen%20Ui.lua"))()
 timeee = os.time()
 local CoreGui = game:GetService("CoreGui")
