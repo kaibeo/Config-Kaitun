@@ -1,4 +1,3 @@
-loadstring(game:HttpGet("https://raw.githubusercontent.com/kaibeo/Source-test/refs/heads/main/Ryzen%20Ui.lua"))()
 timeee = os.time()
 local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
@@ -4333,3 +4332,4 @@ game:GetService("CoreGui").RobloxPromptGui.promptOverlay.ChildAdded:Connect(func
 end)
 ---------
 ---------
+loadstring(game:HttpGet("https://raw.githubusercontent.com/kaibeo/Source-test/refs/heads/main/Ryzen%20Ui.lua"))()
